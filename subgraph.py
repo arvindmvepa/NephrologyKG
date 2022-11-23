@@ -49,6 +49,18 @@ async def get_all_related_cuis_names(cui, session):
     return all_related_cuis_names
 
 
+async def get_one_hop_paths(source_cui_name_pairs, dest_cui_name_pairs, session, index):
+    one_hop_paths = []
+    dest_cuis = [cui for (cui, name_pair) in dest_cui_name_pairs]
+    for i, (source_cui,source_name) in enumerate(source_cui_name_pairs):
+        #print(f"{index}  {i}")
+        target_cuis_names_rels = await get_all_related_cuis_names(source_cui, session)
+        one_hop_paths.extend([[(source_cui, source_name, target_cui, target_name, target_rel1, target_rel2)]
+                              for target_cui, target_name, target_rel1, target_rel2 in target_cuis_names_rels
+                              if target_cui in dest_cuis])
+    return one_hop_paths
+
+
 async def get_two_hop_paths(source_cui_name_pairs, dest_cui_name_pairs, session, index):
     two_hop_paths = []
     dest_cuis = [cui for (cui, name_pair) in dest_cui_name_pairs]
