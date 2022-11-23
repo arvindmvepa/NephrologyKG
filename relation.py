@@ -18,10 +18,10 @@ async def async_get_relations(CUI, session):
                 resp = resp.decode("utf-8")
                 resp_json = json.loads(resp)
                 if retry:
-                    print("Retry successful")
+                    #print("Retry successful")
                 return resp_json
         except Exception as e:
-            print(f"Error retrieving {api_url} due to {e}. Retrying")
+            #print(f"Error retrieving {api_url} due to {e}. Retrying")
             retry = True
 
 
