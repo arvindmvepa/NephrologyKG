@@ -34,6 +34,7 @@ def get_concepts_from_questions(linked_question_file):
 
 
 async def get_all_related_cuis_names(cui, session):
+    print(f"Getting relations for: {cui}")
     json_response = await async_get_relations(cui, session)
     all_related_cuis_names = []
     if "result" in json_response:
@@ -46,6 +47,7 @@ async def get_all_related_cuis_names(cui, session):
             if len(related_cuis) > 0:
                 all_related_cuis_names.extend([(rel_cui, rel_name, rel["relationLabel"], rel["additionalRelationLabel"])
                                          for rel_cui, rel_name in zip(related_cuis, related_names)])
+    print(f"Finished getting relations for: {cui}")
     return all_related_cuis_names
 
 
@@ -139,7 +141,7 @@ async def get_twohop_subgraph(linked_question_file):
     https://stackoverflow.com/questions/57126286/fastest-parallel-requests-in-python
     """
     question_cui_name_pairs, answer_cui_name_pairs = get_concepts_from_questions(linked_question_file)
-    question_cui_name_pairs, answer_cui_name_pairs = question_cui_name_pairs, answer_cui_name_pairs
+    question_cui_name_pairs, answer_cui_name_pairs = question_cui_name_pairs[:5], answer_cui_name_pairs[:5]
     async with aiohttp.ClientSession() as session:
         subgraphs = await asyncio.gather(*[get_two_hop_paths(q_cui_cui_name_pair, a_choice_cui_name_pair, session, (i,j))
                                      for i, (q_cui_cui_name_pair, a_choices_cui_name_pairs) in enumerate(zip(question_cui_name_pairs, answer_cui_name_pairs))
@@ -169,7 +171,7 @@ async def get_fourhop_subgraph(linked_question_file):
     https://stackoverflow.com/questions/57126286/fastest-parallel-requests-in-python
     """
     question_cui_name_pairs, answer_cui_name_pairs = get_concepts_from_questions(linked_question_file)
-    question_cui_name_pairs, answer_cui_name_pairs = question_cui_name_pairs, answer_cui_name_pairs
+    question_cui_name_pairs, answer_cui_name_pairs = question_cui_name_pairs[:5], answer_cui_name_pairs[:5]
     async with aiohttp.ClientSession() as session:
         subgraphs = await asyncio.gather(*[get_four_hop_paths(q_cui_cui_name_pair, a_choice_cui_name_pair, session, (i,j))
                                      for i, (q_cui_cui_name_pair, a_choices_cui_name_pairs) in enumerate(zip(question_cui_name_pairs, answer_cui_name_pairs))
