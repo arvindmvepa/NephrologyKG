@@ -4,7 +4,7 @@ import os
 import csv
 
 BASE_URL = "https://uts-ws.nlm.nih.gov/rest/content/current/CUI/"
-API_KEY = "1a313e43-cbac-4194-87d3-2b2b43e63eb9"
+API_KEY = "9970d9d1-5a1f-4ec7-93d9-4ec95c376f6a"
 
 
 async def async_get_relations(CUI, session):
@@ -24,7 +24,6 @@ async def async_get_relations(CUI, session):
             if not retry:
                 print(f"Error retrieving {api_url} due to {e}. Retrying")
             retry = True
-            pass
 
 
 def get_relations(CUI, info = "partial"):
