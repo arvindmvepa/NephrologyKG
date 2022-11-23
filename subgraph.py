@@ -95,6 +95,20 @@ async def get_three_hop_paths(source_cui_name_pairs, dest_cui_name_pairs, sessio
                                       if target_cui in dest_cuis])
     return three_hop_paths
 
+async def get_onehop_subgraph(linked_question_file):
+    """Get 2-hop subgraphs from question_cuis and answer_cuis using parallelized approach.
+    For parallelizing http requests, reference this:
+    https://stackoverflow.com/questions/57126286/fastest-parallel-requests-in-python
+    """
+    question_cui_name_pairs, answer_cui_name_pairs = get_concepts_from_questions(linked_question_file)
+    question_cui_name_pairs, answer_cui_name_pairs = question_cui_name_pairs, answer_cui_name_pairs
+    async with aiohttp.ClientSession() as session:
+        subgraphs = await asyncio.gather(*[get_one_hop_paths(q_cui_cui_name_pair, a_choice_cui_name_pair, session, (i,j))
+                                     for i, (q_cui_cui_name_pair, a_choices_cui_name_pairs) in enumerate(zip(question_cui_name_pairs, answer_cui_name_pairs))
+                                     for j, a_choice_cui_name_pair in enumerate(a_choices_cui_name_pairs)])
+    print("Finalized all. Return is a list of len {} outputs.".format(len(subgraphs)))
+    return subgraphs
+
 
 async def get_twohop_subgraph(linked_question_file):
     """Get 2-hop subgraphs from question_cuis and answer_cuis using parallelized approach.
