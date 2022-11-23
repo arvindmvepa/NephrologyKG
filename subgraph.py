@@ -126,7 +126,7 @@ async def get_onehop_subgraph(linked_question_file):
     https://stackoverflow.com/questions/57126286/fastest-parallel-requests-in-python
     """
     question_cui_name_pairs, answer_cui_name_pairs = get_concepts_from_questions(linked_question_file)
-    question_cui_name_pairs, answer_cui_name_pairs = question_cui_name_pairs[:5], answer_cui_name_pairs[:5]
+    question_cui_name_pairs, answer_cui_name_pairs = question_cui_name_pairs, answer_cui_name_pairs
     async with aiohttp.ClientSession() as session:
         subgraphs = await asyncio.gather(*[get_one_hop_paths(q_cui_cui_name_pair, a_choice_cui_name_pair, session, (i,j))
                                      for i, (q_cui_cui_name_pair, a_choices_cui_name_pairs) in enumerate(zip(question_cui_name_pairs, answer_cui_name_pairs))
@@ -141,7 +141,7 @@ async def get_twohop_subgraph(linked_question_file):
     https://stackoverflow.com/questions/57126286/fastest-parallel-requests-in-python
     """
     question_cui_name_pairs, answer_cui_name_pairs = get_concepts_from_questions(linked_question_file)
-    question_cui_name_pairs, answer_cui_name_pairs = question_cui_name_pairs[:5], answer_cui_name_pairs[:5]
+    question_cui_name_pairs, answer_cui_name_pairs = question_cui_name_pairs, answer_cui_name_pairs
     async with aiohttp.ClientSession() as session:
         subgraphs = await asyncio.gather(*[get_two_hop_paths(q_cui_cui_name_pair, a_choice_cui_name_pair, session, (i,j))
                                      for i, (q_cui_cui_name_pair, a_choices_cui_name_pairs) in enumerate(zip(question_cui_name_pairs, answer_cui_name_pairs))
