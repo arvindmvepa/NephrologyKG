@@ -10,19 +10,20 @@ API_KEY = "1a313e43-cbac-4194-87d3-2b2b43e63eb9"
 async def async_get_relations(CUI, session):
     # get all relations related to the entity with given CUI
     api_url = "https://uts-ws.nlm.nih.gov/rest/content/current/CUI/" + CUI + "/relations?apiKey=" + API_KEY + "&sabs=MTH"
-    retry=False
+    #retry=False
     while True:
         try:
             async with session.get(url=api_url) as response:
                 resp = await response.read()
                 resp = resp.decode("utf-8")
                 resp_json = json.loads(resp)
-                if retry:
-                    #print("Retry successful")
+                #if retry:
+                #print("Retry successful")
                 return resp_json
         except Exception as e:
             #print(f"Error retrieving {api_url} due to {e}. Retrying")
-            retry = True
+            #retry = True
+            pass
 
 
 def get_relations(CUI, info = "partial"):
