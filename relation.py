@@ -1,5 +1,6 @@
 import json
 import urllib3
+import asyncio
 import os
 import csv
 
@@ -23,6 +24,8 @@ async def async_get_relations(CUI, session):
         except Exception as e:
             if not retry:
                 print(f"Error retrieving {api_url} due to {e}. Retrying")
+            await asyncio.sleep(1)
+
             retry = True
 
 
