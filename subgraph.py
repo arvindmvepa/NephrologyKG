@@ -193,16 +193,16 @@ def get_onehop_subgraph_from_db(linked_question_file):
 
 
 def get_one_hop_paths_from_db(source_cui_name_pairs, dest_cui_name_pairs, index):
+    db_cnx = connect_db()
+    cursor = db_cnx.cursor()
     one_hop_paths = []
     for i, (source_cui,source_name) in enumerate(source_cui_name_pairs):
         for j, (dest_cui, dest_name) in enumerate(dest_cui_name_pairs):
             query = f"SELECT t1.CUI1,t1.CUI2,t1.REL,t1.RELA FROM MRREL t1 WHERE t1.CUI1='{source_cui}' and t1.CUI2='{dest_cui}';"
-            db_cnx = connect_db()
-            cursor = db_cnx.cursor()
             cursor.execute(query)
             for res in cursor:
                 _, _, rel, rela = res
                 one_hop_paths.append([source_cui, source_name, dest_cui, dest_name, rel, rela])
-            cursor.close()
-            db_cnx.close()
+    cursor.close()
+    db_cnx.close()
     return one_hop_paths
