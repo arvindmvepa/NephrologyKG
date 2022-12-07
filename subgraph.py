@@ -238,7 +238,7 @@ def get_two_hop_paths_from_db(source_cui_name_pairs, dest_cui_name_pairs, cursor
                 cui2_1, name_1, rel_1, rela_1, cui1_2, name_2, rel_2, rela_2 = res
                 two_hop_paths.append([source_cui, source_name, cui2_1, name_1, rel_1, rela_1])
                 two_hop_paths.append([cui2_1, name_1, dest_cui, dest_name, rel_2, rela_2])
-    print(f"index: {index}, len(two_hop_paths): {len(two_hop_paths)}")
+    print(f"index: {index}, len(two_hop_paths): {len(two_hop_paths)}, two_hop_paths[0]: {two_hop_paths[0]}, two_hop_paths[1]: {two_hop_paths[1]}, two_hop_paths[2]: {two_hop_paths[2]}")
     return two_hop_paths
 
 
