@@ -181,15 +181,31 @@ async def get_fourhop_subgraph(linked_question_file):
     return subgraphs
 
 
-def get_onehop_subgraph_from_db(linked_question_file):
-    """Get 2-hop subgraphs from question_cuis and answer_cuis from db"""
+def get_k_subgraph_from_db(k=2, linked_question_file):
+    """Get k-hop subgraphs from question_cuis and answer_cuis from db"""
     db_cnx = connect_db()
     cursor = db_cnx.cursor()
     question_cui_name_pairs, answer_cui_name_pairs = get_concepts_from_questions(linked_question_file)
     question_cui_name_pairs, answer_cui_name_pairs = question_cui_name_pairs, answer_cui_name_pairs
-    subgraphs = [get_one_hop_paths_from_db(q_cui_cui_name_pair, a_choice_cui_name_pair, cursor, (i,j))
-                 for i, (q_cui_cui_name_pair, a_choices_cui_name_pairs) in enumerate(zip(question_cui_name_pairs, answer_cui_name_pairs))
-                 for j, a_choice_cui_name_pair in enumerate(a_choices_cui_name_pairs)]
+
+    if k == 1:
+        subgraphs = [get_one_hop_paths_from_db(q_cui_cui_name_pair, a_choice_cui_name_pair, cursor, (i,j))
+                     for i, (q_cui_cui_name_pair, a_choices_cui_name_pairs) in enumerate(zip(question_cui_name_pairs, answer_cui_name_pairs))
+                     for j, a_choice_cui_name_pair in enumerate(a_choices_cui_name_pairs)]
+    elif k == 2:
+        subgraphs = [get_two_hop_paths_from_db(q_cui_cui_name_pair, a_choice_cui_name_pair, cursor, (i,j))
+                     for i, (q_cui_cui_name_pair, a_choices_cui_name_pairs) in enumerate(zip(question_cui_name_pairs, answer_cui_name_pairs))
+                     for j, a_choice_cui_name_pair in enumerate(a_choices_cui_name_pairs)]
+    elif k == 3:
+        subgraphs = [get_three_hop_paths_from_db(q_cui_cui_name_pair, a_choice_cui_name_pair, cursor, (i,j))
+                     for i, (q_cui_cui_name_pair, a_choices_cui_name_pairs) in enumerate(zip(question_cui_name_pairs, answer_cui_name_pairs))
+                     for j, a_choice_cui_name_pair in enumerate(a_choices_cui_name_pairs)]
+    elif k == 4:
+        subgraphs = [get_four_hop_paths_from_db(q_cui_cui_name_pair, a_choice_cui_name_pair, cursor, (i,j))
+                     for i, (q_cui_cui_name_pair, a_choices_cui_name_pairs) in enumerate(zip(question_cui_name_pairs, answer_cui_name_pairs))
+                     for j, a_choice_cui_name_pair in enumerate(a_choices_cui_name_pairs)]
+    else:
+        raise ValueError(f"subgraphs for k={k} is not defined")
     cursor.close()
     db_cnx.close()
     print("Finalized all. Return is a list of len {} outputs.".format(len(subgraphs)))
@@ -207,3 +223,30 @@ def get_one_hop_paths_from_db(source_cui_name_pairs, dest_cui_name_pairs, cursor
                 _, _, rel, rela = res
                 one_hop_paths.append([source_cui, source_name, dest_cui, dest_name, rel, rela])
     return one_hop_paths
+
+
+def get_two_hop_paths_from_db(source_cui_name_pairs, dest_cui_name_pairs, cursor, index):
+    two_hop_paths = []
+    for i, (source_cui,source_name) in enumerate(source_cui_name_pairs):
+        for j, (dest_cui, dest_name) in enumerate(dest_cui_name_pairs):
+            query = f"SELECT t1.CUI1,t1.CUI2,t1.REL,t1.RELA,t2.CUI1,t2.CUI2,t2.REL,t2.RELA FROM MRREL t1, MRREL t2" \
+                    f"WHERE t1.CUI1='{source_cui}' and t1.CUI2=t2.CUI1 and t2.CUI2='{dest_cui}';"
+            cursor.execute(query)
+            for res in cursor:
+                _, _, rel, rela = res
+                two_hop_paths.append([source_cui, source_name, dest_cui, dest_name, rel, rela])
+    return two_hop_paths
+
+
+def get_three_hop_paths_from_db(source_cui_name_pairs, dest_cui_name_pairs, cursor, index):
+    three_hop_paths = []
+    for i, (source_cui,source_name) in enumerate(source_cui_name_pairs):
+        for j, (dest_cui, dest_name) in enumerate(dest_cui_name_pairs):
+            query = f"SELECT t1.CUI1,t1.CUI2,t1.REL,t1.RELA,t2.CUI1,t2.CUI2,t2.REL,t2.RELA,t3.CUI1,t3.CUI2,t3.REL,t3.RELA" \
+                    f"FROM MRREL t1, MRREL t2, MRREL t3 WHERE t1.CUI1='{source_cui}' and t1.CUI2=t2.CUI1 " \
+                    f"t2.CUI2=t3.CUI1 and t3.CUI2='{dest_cui}';"
+            cursor.execute(query)
+            for res in cursor:
+                _, _, rel, rela = res
+                three_hop_paths.append([source_cui, source_name, dest_cui, dest_name, rel, rela])
+    return three_hop_paths
