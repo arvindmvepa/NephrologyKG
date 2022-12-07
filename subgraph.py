@@ -183,18 +183,21 @@ async def get_fourhop_subgraph(linked_question_file):
 
 def get_onehop_subgraph_from_db(linked_question_file):
     """Get 2-hop subgraphs from question_cuis and answer_cuis from db"""
+    db_cnx = connect_db()
+    cursor = db_cnx.cursor()
     question_cui_name_pairs, answer_cui_name_pairs = get_concepts_from_questions(linked_question_file)
     question_cui_name_pairs, answer_cui_name_pairs = question_cui_name_pairs, answer_cui_name_pairs
-    subgraphs = [get_one_hop_paths_from_db(q_cui_cui_name_pair, a_choice_cui_name_pair, (i,j))
+    subgraphs = [get_one_hop_paths_from_db(q_cui_cui_name_pair, a_choice_cui_name_pair, cursor, (i,j))
                  for i, (q_cui_cui_name_pair, a_choices_cui_name_pairs) in enumerate(zip(question_cui_name_pairs, answer_cui_name_pairs))
                  for j, a_choice_cui_name_pair in enumerate(a_choices_cui_name_pairs)]
+    cursor.close()
+    db_cnx.close()
     print("Finalized all. Return is a list of len {} outputs.".format(len(subgraphs)))
+
     return subgraphs
 
 
-def get_one_hop_paths_from_db(source_cui_name_pairs, dest_cui_name_pairs, index):
-    db_cnx = connect_db()
-    cursor = db_cnx.cursor()
+def get_one_hop_paths_from_db(source_cui_name_pairs, dest_cui_name_pairs, cursor, index):
     one_hop_paths = []
     for i, (source_cui,source_name) in enumerate(source_cui_name_pairs):
         for j, (dest_cui, dest_name) in enumerate(dest_cui_name_pairs):
@@ -203,6 +206,4 @@ def get_one_hop_paths_from_db(source_cui_name_pairs, dest_cui_name_pairs, index)
             for res in cursor:
                 _, _, rel, rela = res
                 one_hop_paths.append([source_cui, source_name, dest_cui, dest_name, rel, rela])
-    cursor.close()
-    db_cnx.close()
     return one_hop_paths
