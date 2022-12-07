@@ -3,6 +3,7 @@ import asyncio
 import aiohttp
 from relation import async_get_relations
 from db import connect_db
+from tqdm import tqdm
 
 
 def get_concepts_from_questions(linked_question_file):
@@ -190,19 +191,19 @@ def get_k_subgraph_from_db(linked_question_file, k=2):
 
     if k == 1:
         subgraphs = [get_one_hop_paths_from_db(q_cui_cui_name_pair, a_choice_cui_name_pair, cursor, (i,j))
-                     for i, (q_cui_cui_name_pair, a_choices_cui_name_pairs) in enumerate(zip(question_cui_name_pairs, answer_cui_name_pairs))
+                     for i, (q_cui_cui_name_pair, a_choices_cui_name_pairs) in tqdm(enumerate(zip(question_cui_name_pairs, answer_cui_name_pairs)))
                      for j, a_choice_cui_name_pair in enumerate(a_choices_cui_name_pairs)]
     elif k == 2:
         subgraphs = [get_two_hop_paths_from_db(q_cui_cui_name_pair, a_choice_cui_name_pair, cursor, (i,j))
-                     for i, (q_cui_cui_name_pair, a_choices_cui_name_pairs) in enumerate(zip(question_cui_name_pairs, answer_cui_name_pairs))
+                     for i, (q_cui_cui_name_pair, a_choices_cui_name_pairs) in tqdm(enumerate(zip(question_cui_name_pairs, answer_cui_name_pairs)))
                      for j, a_choice_cui_name_pair in enumerate(a_choices_cui_name_pairs)]
     elif k == 3:
         subgraphs = [get_three_hop_paths_from_db(q_cui_cui_name_pair, a_choice_cui_name_pair, cursor, (i,j))
-                     for i, (q_cui_cui_name_pair, a_choices_cui_name_pairs) in enumerate(zip(question_cui_name_pairs, answer_cui_name_pairs))
+                     for i, (q_cui_cui_name_pair, a_choices_cui_name_pairs) in tqdm(enumerate(zip(question_cui_name_pairs, answer_cui_name_pairs)))
                      for j, a_choice_cui_name_pair in enumerate(a_choices_cui_name_pairs)]
     elif k == 4:
         subgraphs = [get_four_hop_paths_from_db(q_cui_cui_name_pair, a_choice_cui_name_pair, cursor, (i,j))
-                     for i, (q_cui_cui_name_pair, a_choices_cui_name_pairs) in enumerate(zip(question_cui_name_pairs, answer_cui_name_pairs))
+                     for i, (q_cui_cui_name_pair, a_choices_cui_name_pairs) in tqdm(enumerate(zip(question_cui_name_pairs, answer_cui_name_pairs)))
                      for j, a_choice_cui_name_pair in enumerate(a_choices_cui_name_pairs)]
     else:
         raise ValueError(f"subgraphs for k={k} is not defined")
