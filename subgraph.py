@@ -237,8 +237,8 @@ def get_two_hop_paths_from_db(source_cui_name_pairs, dest_cui_name_pairs, cursor
             cursor.execute(query)
             for res in cursor:
                 cui2_1, name_1, rel_1, rela_1, rel_2, rela_2 = res
-                two_hop_paths.append([source_cui, source_name, cui2_1, name_1, rel_1, rela_1])
-                two_hop_paths.append([cui2_1, name_1, dest_cui, dest_name, rel_2, rela_2])
+                two_hop_paths.append([[source_cui, source_name, cui2_1, name_1, rel_1, rela_1],
+                                      [cui2_1, name_1, dest_cui, dest_name, rel_2, rela_2]])
     #print(f"index: {index}, len(two_hop_paths): {len(two_hop_paths)}, two_hop_paths[0]: {two_hop_paths[0]}, two_hop_paths[2]: {two_hop_paths[2]}, two_hop_paths[4]: {two_hop_paths[4]}")
     return two_hop_paths
 
@@ -247,8 +247,8 @@ def get_three_hop_paths_from_db(source_cui_name_pairs, dest_cui_name_pairs, curs
     three_hop_paths = []
     for i, (source_cui,source_name) in enumerate(source_cui_name_pairs):
         for j, (dest_cui, dest_name) in enumerate(dest_cui_name_pairs):
-            query = f"SELECT t1.CUI2,t1.REL,t1.RELA,t2.CUI1,t2.CUI2,t2.REL,t2.RELA," \
-                    "t3.CUI1,t3.REL,t3.RELA FROM MRREL_MTH t1, MRREL_MTH t2, MRREL_MTH t3, MRCONSO f1, MRCONSO f2, MRCONSO f3 " \
+            query = f"SELECT t1.CUI2,t1.REL,t1.RELA,t2.CUI2,t2.REL,t2.RELA," \
+                    "t3.REL,t3.RELA FROM MRREL_MTH t1, MRREL_MTH t2, MRREL_MTH t3, MRCONSO f1, MRCONSO f2, MRCONSO f3 " \
                     f"WHERE t1.CUI1='{source_cui}' and t1.CUI2=t2.CUI1 t2.CUI2=t3.CUI1 and t3.CUI2='{dest_cui}';"
             cursor.execute(query)
             for res in cursor:
