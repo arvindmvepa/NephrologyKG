@@ -217,7 +217,8 @@ def get_one_hop_paths_from_db(source_cui_name_pairs, dest_cui_name_pairs, cursor
     one_hop_paths = []
     for i, (source_cui,source_name) in enumerate(source_cui_name_pairs):
         for j, (dest_cui, dest_name) in enumerate(dest_cui_name_pairs):
-            query = f"SELECT t1.CUI1,t1.CUI2,t1.REL,t1.RELA FROM MRREL t1 WHERE t1.CUI1='{source_cui}' and t1.CUI2='{dest_cui}';"
+            query = "SELECT t1.CUI1,t1.CUI2,t1.REL,t1.RELA FROM MRREL t1 " \
+                    f"WHERE t1.CUI1='{source_cui}' and t1.CUI2='{dest_cui}';"
             cursor.execute(query)
             for res in cursor:
                 _, _, rel, rela = res
@@ -242,11 +243,27 @@ def get_three_hop_paths_from_db(source_cui_name_pairs, dest_cui_name_pairs, curs
     three_hop_paths = []
     for i, (source_cui,source_name) in enumerate(source_cui_name_pairs):
         for j, (dest_cui, dest_name) in enumerate(dest_cui_name_pairs):
-            query = f"SELECT t1.CUI1,t1.CUI2,t1.REL,t1.RELA,t2.CUI1,t2.CUI2,t2.REL,t2.RELA,t3.CUI1,t3.CUI2,t3.REL,t3.RELA" \
-                    f"FROM MRREL t1, MRREL t2, MRREL t3 WHERE t1.CUI1='{source_cui}' and t1.CUI2=t2.CUI1 " \
-                    f"t2.CUI2=t3.CUI1 and t3.CUI2='{dest_cui}';"
+            query = f"SELECT t1.CUI1,t1.CUI2,t1.REL,t1.RELA,t2.CUI1,t2.CUI2,t2.REL,t2.RELA," \ 
+                    "t3.CUI1,t3.CUI2,t3.REL,t3.RELA FROM MRREL t1, MRREL t2, MRREL t3 " \ 
+                    f"WHERE t1.CUI1='{source_cui}' and t1.CUI2=t2.CUI1 t2.CUI2=t3.CUI1 and t3.CUI2='{dest_cui}';"
             cursor.execute(query)
             for res in cursor:
                 _, _, rel, rela = res
                 three_hop_paths.append([source_cui, source_name, dest_cui, dest_name, rel, rela])
     return three_hop_paths
+
+
+def get_four_hop_paths_from_db(source_cui_name_pairs, dest_cui_name_pairs, cursor, index):
+    four_hop_paths = []
+    for i, (source_cui,source_name) in enumerate(source_cui_name_pairs):
+        for j, (dest_cui, dest_name) in enumerate(dest_cui_name_pairs):
+            query = "SELECT t1.CUI1,t1.CUI2,t1.REL,t1.RELA,t2.CUI1,t2.CUI2,t2.REL,t2.RELA," \ 
+                    "t3.CUI1,t3.CUI2,t3.REL,t3.RELA,t4.CUI1,t4.CUI2,t4.REL,t4.RELA " \
+                    "FROM MRREL t1, MRREL t2, MRREL t3, MRREL t4" \ 
+                    f"WHERE t1.CUI1='{source_cui}' and t1.CUI2=t2.CUI1 t2.CUI2=t3.CUI1 " \
+                    f"and t3.CUI2=t4.CUI1 and t4.CUI2='{dest_cui}';"
+            cursor.execute(query)
+            for res in cursor:
+                _, _, rel, rela = res
+                four_hop_paths.append([source_cui, source_name, dest_cui, dest_name, rel, rela])
+    return four_hop_paths
