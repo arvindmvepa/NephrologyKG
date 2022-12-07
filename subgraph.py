@@ -196,10 +196,10 @@ def get_one_hop_paths_from_db(source_cui_name_pairs, dest_cui_name_pairs, index)
     one_hop_paths = []
     for i, (source_cui,source_name) in enumerate(source_cui_name_pairs):
         for j, (dest_cui, dest_name) in enumerate(dest_cui_name_pairs):
-            import sys
-            print(f"{source_cui}, {dest_cui}")
-            sys.stdout.flush()
             query = f"SELECT t1.CUI1,t1.CUI2,t1.REL,t1.RELA FROM MRREL t1 WHERE t1.CUI1='{source_cui} and t1.CUI2='{dest_cui}';"
+            import sys
+            print(query)
+            sys.stdout.flush()
             db_cnx = connect_db()
             cursor = db_cnx.cursor()
             cursor.execute(query)
