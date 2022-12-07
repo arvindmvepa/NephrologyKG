@@ -181,7 +181,7 @@ async def get_fourhop_subgraph(linked_question_file):
     return subgraphs
 
 
-def get_k_subgraph_from_db(k=2, linked_question_file):
+def get_k_subgraph_from_db(linked_question_file, k=2):
     """Get k-hop subgraphs from question_cuis and answer_cuis from db"""
     db_cnx = connect_db()
     cursor = db_cnx.cursor()
