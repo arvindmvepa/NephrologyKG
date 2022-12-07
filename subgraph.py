@@ -2,6 +2,7 @@ import json
 import asyncio
 import aiohttp
 from relation import async_get_relations
+from db import connect_db
 
 
 def get_concepts_from_questions(linked_question_file):
@@ -178,3 +179,30 @@ async def get_fourhop_subgraph(linked_question_file):
                                      for j, a_choice_cui_name_pair in enumerate(a_choices_cui_name_pairs)])
     print("Finalized all. Return is a list of len {} outputs.".format(len(subgraphs)))
     return subgraphs
+
+
+def get_onehop_subgraph_from_db(linked_question_file):
+    """Get 2-hop subgraphs from question_cuis and answer_cuis from db"""
+    question_cui_name_pairs, answer_cui_name_pairs = get_concepts_from_questions(linked_question_file)
+    question_cui_name_pairs, answer_cui_name_pairs = question_cui_name_pairs, answer_cui_name_pairs
+    subgraphs = [get_one_hop_paths(q_cui_cui_name_pair, a_choice_cui_name_pair, (i,j))
+                 for i, (q_cui_cui_name_pair, a_choices_cui_name_pairs) in enumerate(zip(question_cui_name_pairs, answer_cui_name_pairs))
+                 for j, a_choice_cui_name_pair in enumerate(a_choices_cui_name_pairs)]
+    print("Finalized all. Return is a list of len {} outputs.".format(len(subgraphs)))
+    return subgraphs
+
+
+def get_one_hop_paths_from_db(source_cui_name_pairs, dest_cui_name_pairs, index):
+    one_hop_paths = []
+    for i, (source_cui,source_name) in enumerate(source_cui_name_pairs):
+        for j, (dest_cui, dest_name) in enumerate(dest_cui_name_pairs):
+            query = f"SELECT t1.CUI1,t1.CUI2,t1.REL,t1.RELA FROM MRREL t1 WHERE t1.CUI1='{source_cui} and t1.CUI2='{dest_cui}';"
+            db_cnx = connect_db()
+            cursor = db_cnx.cursor()
+            cursor.execute(query)
+            for res in cursor:
+                _, _, rel, rela = res
+                one_hop_paths.append([source_cui, source_name, dest_cui, dest_name, rel, rela])
+            cursor.close()
+            db_cnx.close()
+    return one_hop_paths
