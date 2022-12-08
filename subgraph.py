@@ -247,13 +247,16 @@ def get_three_hop_paths_from_db(source_cui_name_pairs, dest_cui_name_pairs, curs
     three_hop_paths = []
     for i, (source_cui,source_name) in enumerate(source_cui_name_pairs):
         for j, (dest_cui, dest_name) in enumerate(dest_cui_name_pairs):
-            query = f"SELECT t1.CUI2,t1.REL,t1.RELA,t2.CUI2,t2.REL,t2.RELA," \
-                    "t3.REL,t3.RELA FROM MRREL_MTH t1, MRREL_MTH t2, MRREL_MTH t3, MRCONSO f1, MRCONSO f2, MRCONSO f3 " \
-                    f"WHERE t1.CUI1='{source_cui}' and t1.CUI2=t2.CUI1 t2.CUI2=t3.CUI1 and t3.CUI2='{dest_cui}';"
+            query = f"SELECT t1.CUI2,f1.STR,t1.REL,t1.RELA,t2.CUI2,f2.STR,t2.REL,t2.RELA,t3.REL,t3.RELA" \
+                    "t3.REL,t3.RELA FROM MRREL_MTH t1, MRREL_MTH t2, MRREL_MTH t3, MRCONSO_MTH f1, MRCONSO_MTH f2 " \
+                    f"WHERE t1.CUI1='{source_cui}' and t1.CUI2=t2.CUI1 t2.CUI2=t3.CUI1 and t3.CUI2='{dest_cui}' " \
+                    "f1.CUI=t1.CUI2 and f2.CUI=t2.CUI2 ;"
             cursor.execute(query)
             for res in cursor:
-                _, _, rel, rela = res
-                three_hop_paths.append([source_cui, source_name, dest_cui, dest_name, rel, rela])
+                cui2_1, str2_1, rel_1, rela_1, cui2_2, str2_2, rel_2, rela_2, rel_3, rela_3 = res
+                three_hop_paths.append([[source_cui, source_name, cui2_1, str2_1, rel_1, rela_1],
+                                        [cui2_1, str2_1, cui2_2, str2_2, rel_2, rela_2],
+                                        [cui2_2, str2_2, dest_cui, dest_name, rel_3, rela_3]])
     return three_hop_paths
 
 
