@@ -232,7 +232,7 @@ def get_two_hop_paths_from_db(source_cui_name_pairs, dest_cui_name_pairs, cursor
     for i, (source_cui,source_name) in enumerate(source_cui_name_pairs):
         for j, (dest_cui, dest_name) in enumerate(dest_cui_name_pairs):
             query = f"SELECT t1.CUI2,f1.STR,t1.REL,t1.RELA,t2.REL,t2.RELA FROM MRREL_MTH t1, MRREL_MTH t2, " \
-                    f"MRCONSO f1 WHERE t1.CUI1='{source_cui}' and t1.CUI2=t2.CUI1 and t2.CUI2='{dest_cui}' " \
+                    f"MRCONSO_MTH f1 WHERE t1.CUI1='{source_cui}' and t1.CUI2=t2.CUI1 and t2.CUI2='{dest_cui}' " \
                     "and t1.CUI2=f1.CUI ;"
             cursor.execute(query)
             for res in cursor:
