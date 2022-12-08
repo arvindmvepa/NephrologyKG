@@ -269,7 +269,7 @@ def get_four_hop_paths_from_db(source_cui_name_pairs, dest_cui_name_pairs, curso
                     "FROM MRREL_MTH t1, MRREL_MTH t2, MRREL_MTH t3, MRREL_MTH t4 " \
                     "MRCONSO_MTH f1, MRCONSO_MTH f2, MRCONSO_MTH f3 " \
                     f"WHERE t1.CUI1='{source_cui}' and t1.CUI2=t2.CUI1 and t2.CUI2=t3.CUI1 " \
-                    f"and t3.CUI2=t4.CUI1 and t4.CUI2='{dest_cui}' and f1.CUI=t1.CUI2 and " \ 
+                    f"and t3.CUI2=t4.CUI1 and t4.CUI2='{dest_cui}' and f1.CUI=t1.CUI2 and " \
                     "f2.CUI=t2.CUI2 and f3.CUI=t3.CUI2;"
             cursor.execute(query)
             for res in cursor:
