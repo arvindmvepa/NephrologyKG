@@ -7,10 +7,11 @@ import networkx as nx
 from scipy.sparse import csr_matrix, coo_matrix
 from multiprocessing import Pool
 import joblib
-import sys
+import torch
+from transformers import AutoTokenizer, AutoModel, AutoConfig
 
 
-def generate_adj_data_for_model(data_root, sections=('dev', 'test', 'train'), k=3, add_blank=True):
+def generate_adj_data_for_model(data_root, sections=('dev', 'test', 'train'), k=3, add_blank=True, use_torch=True):
     nephqa_root = f"{data_root}/nephqa"
     db_root = f"{data_root}/ddb"
 
@@ -182,6 +183,8 @@ def generate_adj_data_for_model(data_root, sections=('dev', 'test', 'train'), k=
         with open(output_path, 'wb') as fout:
             joblib.dump(res, fout)
 
+    generate_kg_embeddings(db_root, use_torch=use_torch)
+
 
 def generate_adj_data_from_grounded_concepts(grounded_path, k, num_processes, blank_q_item_ptr=None,
                                              blank_a_item_ptr=None):
@@ -341,4 +344,27 @@ def concepts_to_adj_matrices_4hop_all_pair(data):
     adj, concepts = concepts2adj_for_k_gt_2(schema_graph, sorted(qc_ids),
                                             sorted(ac_ids), sorted(extra_nodes))
     return {'adj': adj, 'concepts': concepts, 'qmask': qmask, 'amask': amask, 'cid2score': None}
+
+def generate_kg_embeddings(db_root, use_torch=True):
+    tokenizer = AutoTokenizer.from_pretrained("cambridgeltl/SapBERT-from-PubMedBERT-fulltext")
+    bert_model = AutoModel.from_pretrained("cambridgeltl/SapBERT-from-PubMedBERT-fulltext")
+    if use_torch:
+        device = torch.device('cuda')
+        bert_model.to(device)
+    bert_model.eval()
+
+    with open(f"{db_root}/vocab.txt", encoding='utf-8') as f:
+        names = [line.strip() for line in f]
+
+    embs = []
+    tensors = tokenizer(names, padding=True, truncation=True, return_tensors="pt")
+    with torch.no_grad():
+        for i, j in enumerate(tqdm(names)):
+            outputs = bert_model(input_ids=tensors["input_ids"][i:i + 1],
+                                 attention_mask=tensors['attention_mask'][i:i + 1])
+            out = np.array(outputs[1].squeeze().tolist()).reshape((1, -1))
+            embs.append(out)
+    embs = np.concatenate(embs)
+    np.save(f"{db_root}/ent_emb.npy", embs)
+
 
