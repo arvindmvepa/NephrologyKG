@@ -346,18 +346,22 @@ def concepts_to_adj_matrices_4hop_all_pair(data):
     return {'adj': adj, 'concepts': concepts, 'qmask': qmask, 'amask': amask, 'cid2score': None}
 
 def generate_kg_embeddings(db_root, use_torch=True):
-    tokenizer = AutoTokenizer.from_pretrained("cambridgeltl/SapBERT-from-PubMedBERT-fulltext")
-    bert_model = AutoModel.from_pretrained("cambridgeltl/SapBERT-from-PubMedBERT-fulltext")
     if use_torch:
         device = torch.device('cuda')
-        bert_model.to(device)
+    else:
+        device = torch.device('cpu')
+
+    tokenizer = AutoTokenizer.from_pretrained("cambridgeltl/SapBERT-from-PubMedBERT-fulltext")
+    bert_model = AutoModel.from_pretrained("cambridgeltl/SapBERT-from-PubMedBERT-fulltext")
+    bert_model.to(device)
     bert_model.eval()
 
     with open(f"{db_root}/vocab.txt", encoding='utf-8') as f:
         names = [line.strip() for line in f]
 
+    tensors = tokenizer(names, padding=True, truncation=True, return_tensors="pt").to(device)
+
     embs = []
-    tensors = tokenizer(names, padding=True, truncation=True, return_tensors="pt")
     with torch.no_grad():
         for i, j in enumerate(tqdm(names)):
             outputs = bert_model(input_ids=tensors["input_ids"][i:i + 1],
