@@ -121,7 +121,7 @@ def generate_adj_data_for_model(data_root, sections=('dev', 'test', 'train'), k=
         relation2id = {r: i for i, r in enumerate(id2relation)}
         graph = nx.MultiDiGraph()
         attrs = set()
-        for relation in relas_lst:
+        for relation in tqdm(relas_lst):
             subj = concept2id[relation[0]]
             obj = concept2id[relation[1]]
             rel = relation2id[relation[2]]
