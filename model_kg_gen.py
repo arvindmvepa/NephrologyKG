@@ -7,6 +7,7 @@ import networkx as nx
 from scipy.sparse import csr_matrix, coo_matrix
 from multiprocessing import Pool
 import joblib
+import sys
 
 
 def generate_adj_data_for_model(data_root, sections=('dev', 'test', 'train'), k=3):
@@ -157,6 +158,8 @@ def generate_adj_data_for_model(data_root, sections=('dev', 'test', 'train'), k=
         output_path = f"{nephqa_root}/graph/{fname}.graph.adj.pk"
 
         res = generate_adj_data_from_grounded_concepts(grounded_path, kg_path, k, 10)
+        print(f"size of adj_data: {sys.getsizeof(res)}")
+
         with open(output_path, 'wb') as fout:
             joblib.dump(res, fout)
 
