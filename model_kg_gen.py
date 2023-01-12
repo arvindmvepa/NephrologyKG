@@ -171,11 +171,7 @@ def generate_adj_data_from_grounded_concepts(grounded_path, k, num_processes):
         for line in fin:
             dic = json.loads(line)
             q_ids = set(concept2id[int(c)] for c in dic['qc'])
-            if not q_ids:
-                q_ids = {concept2id[119]}
             a_ids = set(concept2id[int(c)] for c in dic['ac'])
-            if not a_ids:
-                a_ids = {concept2id[113]}
             q_ids = q_ids - a_ids
             qa_data.append((q_ids, a_ids))
 
