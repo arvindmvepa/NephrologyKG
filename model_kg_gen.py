@@ -10,6 +10,8 @@ import joblib
 
 
 def generate_adj_data_for_model(data_root, sections=('dev', 'test', 'train'), k=3):
+    global concept2id, id2relation, cpnet, cpnet_simple
+
     nephqa_root = f"{data_root}/nephqa"
     db_root = f"{data_root}/ddb"
 
@@ -144,11 +146,8 @@ def generate_adj_data_for_model(data_root, sections=('dev', 'test', 'train'), k=
                 cpnet_simple[u][v]['weight'] += w
             else:
                 cpnet_simple.add_edge(u, v, weight=w)
-        return cpnet, cpnet_simple
 
-    cpnet, cpnet_simple = load_kg()
-
-    global concept2id, id2relation, cpnet, cpnet_simple
+    load_kg()
 
     os.system(f'mkdir -p {nephqa_root}/graph')
 
