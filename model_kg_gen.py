@@ -113,7 +113,6 @@ def generate_adj_data_for_model(data_root, sections=('dev', 'test', 'train'), k=
         'RN',
         'RB'
     ]
-    relas_dict = {"RO": 0, "RN": 1, "RB": 1}
 
     def construct_graph():
         concept2id = {w: i for i, w in enumerate(id2concept)}
@@ -137,7 +136,6 @@ def generate_adj_data_for_model(data_root, sections=('dev', 'test', 'train'), k=
     concept2id, id2relation, relation2id, KG = construct_graph()
 
     def load_kg():
-        global cpnet, cpnet_simple
         cpnet = KG
         cpnet_simple = nx.Graph()
         for u, v, data in cpnet.edges(data=True):
@@ -146,11 +144,11 @@ def generate_adj_data_for_model(data_root, sections=('dev', 'test', 'train'), k=
                 cpnet_simple[u][v]['weight'] += w
             else:
                 cpnet_simple.add_edge(u, v, weight=w)
+        return cpnet, cpnet_simple
 
-    load_kg()
+    cpnet, cpnet_simple = load_kg()
 
     def concepts2adj(schema_graph, qc_ids, ac_ids, extra_nodes):
-        global id2relation
         cids = np.array(schema_graph, dtype=np.int32)
         n_rel = len(id2relation)
         n_node = cids.shape[0]
@@ -169,7 +167,6 @@ def generate_adj_data_for_model(data_root, sections=('dev', 'test', 'train'), k=
         return adj, cids
 
     def concepts2adj_for_k_gt_2(schema_graph, qc_ids, ac_ids, extra_nodes):
-        global id2relation
         cids = np.array(schema_graph, dtype=np.int32)
         n_rel = len(id2relation)
         n_node = cids.shape[0]
@@ -259,8 +256,6 @@ def generate_adj_data_for_model(data_root, sections=('dev', 'test', 'train'), k=
         return {'adj': adj, 'concepts': concepts, 'qmask': qmask, 'amask': amask, 'cid2score': None}
 
     def generate_adj_data_from_grounded_concepts(grounded_path, output_path, num_processes):
-        global concept2id, id2concept, relation2id, id2relation, cpnet_simple, cpnet
-
         qa_data = []
         with open(grounded_path, 'r', encoding='utf-8') as fin:
             for line in fin:
