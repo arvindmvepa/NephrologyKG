@@ -158,6 +158,7 @@ def generate_adj_data_for_model(data_root, sections=('dev', 'test', 'train'), k=
 
         res = generate_adj_data_from_grounded_concepts(grounded_path, k, 10)
         print(f"size of adj_data: {sys.getsizeof(res)}")
+        print(f"Verfication Sum (sum of all concept values: {sum([sum(r['concepts']) for r in res])}")
 
         with open(output_path, 'wb') as fout:
             joblib.dump(res, fout)
