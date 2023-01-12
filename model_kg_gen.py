@@ -10,7 +10,7 @@ import joblib
 import sys
 
 
-def generate_adj_data_for_model(data_root, sections=('dev', 'test', 'train'), k=3):
+def generate_adj_data_for_model(data_root, sections=('dev', 'test', 'train'), k=3, add_blank=True):
     nephqa_root = f"{data_root}/nephqa"
     db_root = f"{data_root}/ddb"
 
@@ -87,6 +87,21 @@ def generate_adj_data_for_model(data_root, sections=('dev', 'test', 'train'), k=
 
     relas_lst, ddb_ptr_to_name, ddb_name_to_ptr, ddb_ptr_to_preferred_name = load_ddb()
 
+    # add arbitrary blanks for defaults if there are no question or answer concepts
+    if add_blank:
+        item_ptrs = list(ddb_ptr_to_preferred_name.keys())
+        blank_q_item_ptr = max(item_ptrs) + 1
+        blank_q_name = "    "
+        ddb_name_to_ptr[blank_q_name] = blank_q_item_ptr
+        ddb_ptr_to_preferred_name[blank_q_item_ptr] = blank_q_name
+        ddb_ptr_to_name[blank_q_item_ptr].append(blank_q_name)
+
+        blank_a_item_ptr = blank_q_item_ptr + 1
+        blank_a_name = "     "
+        ddb_name_to_ptr[blank_a_name] = blank_a_item_ptr
+        ddb_ptr_to_preferred_name[blank_a_item_ptr] = blank_a_name
+        ddb_ptr_to_name[blank_a_item_ptr].append(blank_a_name)
+
     ddb_ptr_lst, ddb_names_lst = [], []
     for key, val in ddb_ptr_to_preferred_name.items():
         ddb_ptr_lst.append(key)
@@ -156,14 +171,20 @@ def generate_adj_data_for_model(data_root, sections=('dev', 'test', 'train'), k=
         grounded_path = f"{nephqa_root}/grounded/{fname}.grounded.jsonl"
         output_path = f"{nephqa_root}/graph/{fname}.graph.adj.pk"
 
-        res = generate_adj_data_from_grounded_concepts(grounded_path, k, 10)
+        if add_blank:
+            res = generate_adj_data_from_grounded_concepts(grounded_path, k, 10,
+                                                           blank_q_item_ptr=blank_q_item_ptr,
+                                                           blank_a_item_ptr=blank_a_item_ptr)
+        else:
+            res = generate_adj_data_from_grounded_concepts(grounded_path, k, 10)
         print(f"Verification Sum (sum of all concept values): {sum([sum(r['concepts']) for r in res])}")
 
         with open(output_path, 'wb') as fout:
             joblib.dump(res, fout)
 
 
-def generate_adj_data_from_grounded_concepts(grounded_path, k, num_processes):
+def generate_adj_data_from_grounded_concepts(grounded_path, k, num_processes, blank_q_item_ptr=None,
+                                             blank_a_item_ptr=None):
     global concept2id
 
     qa_data = []
@@ -172,10 +193,18 @@ def generate_adj_data_from_grounded_concepts(grounded_path, k, num_processes):
             dic = json.loads(line)
             q_ids = set(concept2id[int(c)] for c in dic['qc'])
             if not q_ids:
-                q_ids = {concept2id[119]}
+                if blank_q_item_ptr:
+                    q_ids = {concept2id[blank_q_item_ptr]}
+                else:
+                    # arbitrary item ptr - probably not a good default
+                    q_ids = {concept2id[119]}
             a_ids = set(concept2id[int(c)] for c in dic['ac'])
             if not a_ids:
-                a_ids = {concept2id[113]}
+                if blank_a_item_ptr:
+                    a_ids = {concept2id[blank_a_item_ptr]}
+                else:
+                    # arbitrary item ptr - probably not a good default
+                    a_ids = {concept2id[113]}
             q_ids = q_ids - a_ids
             qa_data.append((q_ids, a_ids))
 
