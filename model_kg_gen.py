@@ -154,17 +154,16 @@ def generate_adj_data_for_model(data_root, sections=('dev', 'test', 'train'), k=
 
     for fname in sections:
         grounded_path = f"{nephqa_root}/grounded/{fname}.grounded.jsonl"
-        kg_path = f"{db_root}/ddb.graph"
         output_path = f"{nephqa_root}/graph/{fname}.graph.adj.pk"
 
-        res = generate_adj_data_from_grounded_concepts(grounded_path, kg_path, k, 10)
+        res = generate_adj_data_from_grounded_concepts(grounded_path, k, 10)
         print(f"size of adj_data: {sys.getsizeof(res)}")
 
         with open(output_path, 'wb') as fout:
             joblib.dump(res, fout)
 
 
-def generate_adj_data_from_grounded_concepts(grounded_path, output_path, k, num_processes):
+def generate_adj_data_from_grounded_concepts(grounded_path, k, num_processes):
     global concept2id
 
     qa_data = []
@@ -195,11 +194,6 @@ def generate_adj_data_from_grounded_concepts(grounded_path, output_path, k, num_
     print('mean #nodes', int(np.mean(lens)), 'med', int(np.median(lens)), '5th', int(np.percentile(lens, 5)),
           '95th', int(np.percentile(lens, 95)))
 
-    with open(output_path, 'wb') as fout:
-        joblib.dump(res, fout)
-
-    print(f'adj data saved to {output_path}')
-    print()
     return res
 
 
