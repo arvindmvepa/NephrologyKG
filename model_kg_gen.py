@@ -10,8 +10,6 @@ import joblib
 
 
 def generate_adj_data_for_model(data_root, sections=('dev', 'test', 'train'), k=3):
-    global concept2id, id2relation, cpnet, cpnet_simple
-
     nephqa_root = f"{data_root}/nephqa"
     db_root = f"{data_root}/ddb"
 
@@ -117,6 +115,7 @@ def generate_adj_data_for_model(data_root, sections=('dev', 'test', 'train'), k=
     ]
 
     def construct_graph():
+        global concept2id, id2relation
         concept2id = {w: i for i, w in enumerate(id2concept)}
         id2relation = merged_relations
         relation2id = {r: i for i, r in enumerate(id2relation)}
@@ -133,11 +132,12 @@ def generate_adj_data_for_model(data_root, sections=('dev', 'test', 'train'), k=
             attrs.add((obj, subj, rel + len(relation2id)))
         output_path = f"{db_root}/ddb.graph"
         nx.write_gpickle(graph, output_path)
-        return concept2id, id2relation, relation2id, graph
+        return graph
 
-    concept2id, id2relation, relation2id, KG = construct_graph()
+    KG = construct_graph()
 
     def load_kg():
+        global cpnet, cpnet_simple
         cpnet = KG
         cpnet_simple = nx.Graph()
         for u, v, data in cpnet.edges(data=True):
@@ -162,6 +162,8 @@ def generate_adj_data_for_model(data_root, sections=('dev', 'test', 'train'), k=
 
 
 def generate_adj_data_from_grounded_concepts(grounded_path, output_path, k, num_processes):
+    global concept2id
+
     qa_data = []
     with open(grounded_path, 'r', encoding='utf-8') as fin:
         for line in fin:
@@ -199,6 +201,7 @@ def generate_adj_data_from_grounded_concepts(grounded_path, output_path, k, num_
 
 
 def concepts2adj(schema_graph, qc_ids, ac_ids, extra_nodes):
+    global id2relation, cpnet
     cids = np.array(schema_graph, dtype=np.int32)
     n_rel = len(id2relation)
     n_node = cids.shape[0]
@@ -218,6 +221,7 @@ def concepts2adj(schema_graph, qc_ids, ac_ids, extra_nodes):
 
 
 def concepts2adj_for_k_gt_2(schema_graph, qc_ids, ac_ids, extra_nodes):
+    global id2relation, cpnet
     cids = np.array(schema_graph, dtype=np.int32)
     n_rel = len(id2relation)
     n_node = cids.shape[0]
@@ -238,6 +242,7 @@ def concepts2adj_for_k_gt_2(schema_graph, qc_ids, ac_ids, extra_nodes):
 
 
 def concepts_to_adj_matrices_2hop_all_pair(data):
+    global cpnet_simple
     qc_ids, ac_ids = data
     qa_nodes = set(qc_ids) | set(ac_ids)
     extra_nodes = set()
@@ -255,6 +260,7 @@ def concepts_to_adj_matrices_2hop_all_pair(data):
 
 
 def concepts_to_adj_matrices_3hop_all_pair(data):
+    global cpnet_simple
     qc_ids, ac_ids = data
     qa_nodes = set(qc_ids) | set(ac_ids)
     extra_nodes = set()
@@ -280,6 +286,7 @@ def concepts_to_adj_matrices_3hop_all_pair(data):
 
 
 def concepts_to_adj_matrices_4hop_all_pair(data):
+    global cpnet_simple
     qc_ids, ac_ids = data
     qa_nodes = set(qc_ids) | set(ac_ids)
     extra_nodes = set()
