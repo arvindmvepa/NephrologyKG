@@ -124,7 +124,6 @@ def merge_kg(first_db, second_db, target_db):
         for name, (old_id, _) in first_db_entities_dict.items():
             if old_id == old_db_id:
                 db_entities_json[name] = [db_id, "1"]
-                break
 
     for _, str_db_id, cui, _ in second_db_ddb_to_umls_cui_list:
         db_id = db_entity_ids[cui]
@@ -144,7 +143,6 @@ def merge_kg(first_db, second_db, target_db):
                         name = name + " "
                 if not_contained:
                     db_entities_json[name] = [db_id, "1"]
-                break
 
     # add relation information
     for _, rel_tuple in first_db_relations_dict.items():
