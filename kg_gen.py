@@ -49,9 +49,15 @@ def generate_khop_kg_from_db(data_root, sections=('dev', 'test', 'train'), k=2, 
                         db_id = db_entity_ids[cui]
                         db_to_umls.add((db_id, cui))
                         umls_to_db[cui] = db_id
-                        while name in db_entities_json:
-                            name = name + " "
-                        db_entities_json[name] = [db_id, "1"]
+                        # verify that new names don't overwrite old names but making sure to ignore if ids are the same
+                        not_contained = True
+                        while name in db_entities_json and not_contained:
+                            if db_entities_json[name][0] == db_id:
+                                not_contained = False
+                            else:
+                                name = name + " "
+                        if not_contained:
+                            db_entities_json[name] = [db_id, "1"]
                     # add relations
                     subj, obj = entity_cuis
                     subj_id = db_entity_ids[subj]
