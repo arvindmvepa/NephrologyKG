@@ -126,9 +126,6 @@ def merge_kg(first_db, second_db, target_db):
                 db_entities_json[name] = [db_id, "1"]
 
     for _, str_db_id, cui, _ in second_db_ddb_to_umls_cui_list:
-        # skip cuis already added
-        if cui in db_entity_ids:
-            continue
         db_id = db_entity_ids[cui]
         db_to_umls.add((db_id, cui))
         umls_to_db[cui] = db_id
