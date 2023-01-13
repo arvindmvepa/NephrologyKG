@@ -4,6 +4,7 @@ import time
 from collections import defaultdict
 from subgraph import get_k_subgraph_from_db
 import numpy as np
+from tqdm import tqdm
 
 
 def generate_khop_kg_from_db(data_root, sections=('dev', 'test', 'train'), k=2, return_stats=True):
@@ -36,7 +37,7 @@ def generate_khop_kg_from_db(data_root, sections=('dev', 'test', 'train'), k=2, 
     db_relations_json = {}
     db_relation_ids = defaultdict(lambda: len(db_relation_ids))
 
-    for graph in kg_subgraphs:
+    for graph in tqdm(kg_subgraphs):
         for paths in graph:
             if len(paths) == k:
                 for path in paths:
