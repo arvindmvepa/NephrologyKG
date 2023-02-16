@@ -1,3 +1,32 @@
+import os
+from sklearn.model_selection import train_test_split
+
+
+def create_train_dev_test_split(base_file, nephqa_root=r"C:\Users\fabien\Documents\Arvind\GreaseLM\data\nephqa",
+                                test_prop=0.15, dev_prop=0.10, random_state=0):
+    with open(base_file) as f:
+        lines = f.readlines()
+    traindev, test = train_test_split(lines, test_size=test_prop, random_state=random_state)
+    train, dev = train_test_split(traindev, test_size=dev_prop, random_state=random_state)
+
+    statement_dir = os.path.join(nephqa_root, "statement")
+    if not os.path.exists(statement_dir):
+        os.makedirs(statement_dir)
+
+    train_file = os.path.join(statement_dir, "train.statement.jsonl")
+    dev_file = os.path.join(statement_dir, "dev.statement.jsonl")
+    test_file = os.path.join(statement_dir, "test.statement.jsonl")
+
+    with open(train_file, "w") as f:
+        f.writelines(train)
+    with open(dev_file, "w") as f:
+        f.writelines(dev)
+    with open(test_file, "w") as f:
+        f.writelines(test)
+
+    return {"train_file": train_file, "dev_file": dev_file, "test_file": test_file}
+
+
 def convert_qa_text_to_dict(files=()):
     q_list = []
     for file in files:
