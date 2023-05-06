@@ -12,12 +12,12 @@ from transformers import AutoTokenizer, AutoModel, AutoConfig
 
 
 def generate_adj_data_for_model(data_root, sections=('dev', 'test', 'train'), k=3, add_blank=True, use_torch=True):
-    nephqa_root = f"{data_root}/nephqa"
-    db_root = f"{data_root}/ddb"
+    nephqa_root = os.path.join(data_root, "nephqa")
+    db_root = os.path.join(data_root, "ddb")
 
     #Convert UMLS entity linking to DDB entity linking (our KG)
     umls_to_ddb = {}
-    with open(f'{db_root}/ddb_to_umls_cui.txt', encoding='utf-8') as f:
+    with open(os.path.join(db_root, "ddb_to_umls_cui.txt"), encoding='utf-8') as f:
         for line in f.readlines()[1:]:
             elms = line.split("\t")
             umls_to_ddb[elms[2]] = elms[1]
@@ -33,9 +33,9 @@ def generate_adj_data_for_model(data_root, sections=('dev', 'test', 'train'), k=
         return res
 
     def process(fname):
-        with open(f"{nephqa_root}/statement/{fname}.statement.umls_linked.jsonl", encoding='utf-8') as fin:
+        with open(os.path.join(nephqa_root, "statement", f"{fname}.statement.umls_linked.jsonl"), encoding='utf-8')as fin:
             stmts = [json.loads(line) for line in fin]
-        with open(f"{nephqa_root}/grounded/{fname}.grounded.jsonl", 'w', encoding='utf-8') as fout:
+        with open(os.path.join(nephqa_root, "grounded", f"{fname}.grounded.jsonl"), 'w', encoding='utf-8') as fout:
             for stmt in tqdm(stmts):
                 sent = stmt['question']['stem']
                 qc = []
@@ -59,14 +59,14 @@ def generate_adj_data_for_model(data_root, sections=('dev', 'test', 'train'), k=
                     out = {'sent': sent, 'ans': ans, 'qc': qc, 'qc_names': qc_names, 'ac': ac, 'ac_names': ac_names}
                     print (json.dumps(out), file=fout)
 
-    os.system(f'mkdir -p {nephqa_root}/grounded')
+    os.system(f'mkdir -p {os.path.join(nephqa_root, "grounded")}')
     for fname in sections:
         process(fname)
 
     def load_ddb():
-        with open(f'{db_root}/ddb_names.json', encoding='utf-8') as f:
+        with open(os.path.join(db_root, "ddb_names.json"), encoding='utf-8') as f:
             all_names = json.load(f)
-        with open(f'{db_root}/ddb_relas.json', encoding='utf-8') as f:
+        with open(os.path.join(db_root, "ddb_relas.json"), encoding='utf-8') as f:
             all_relas = json.load(f)
         relas_lst = []
         for key, val in all_relas.items():
@@ -108,11 +108,11 @@ def generate_adj_data_for_model(data_root, sections=('dev', 'test', 'train'), k=
         ddb_ptr_lst.append(key)
         ddb_names_lst.append(val)
 
-    with open(f"{db_root}/vocab.txt", "w", encoding='utf-8') as fout:
+    with open(os.path.join(db_root, "vocab.txt"), "w", encoding='utf-8') as fout:
         for ddb_name in ddb_names_lst:
             print(ddb_name, file=fout)
 
-    with open(f"{db_root}/ptrs.txt", "w", encoding='utf-8') as fout:
+    with open(os.path.join(db_root, "ptrs.txt"), "w", encoding='utf-8') as fout:
         for ddb_ptr in ddb_ptr_lst:
             print(ddb_ptr, file=fout)
 
@@ -147,7 +147,7 @@ def generate_adj_data_for_model(data_root, sections=('dev', 'test', 'train'), k=
             attrs.add((subj, obj, rel))
             graph.add_edge(obj, subj, rel=rel + len(relation2id), weight=weight)
             attrs.add((obj, subj, rel + len(relation2id)))
-        output_path = f"{db_root}/ddb.graph"
+        output_path = os.path.join(db_root, "ddb.graph")
         nx.write_gpickle(graph, output_path)
         return graph
 
@@ -166,11 +166,11 @@ def generate_adj_data_for_model(data_root, sections=('dev', 'test', 'train'), k=
 
     load_kg()
 
-    os.system(f'mkdir -p {nephqa_root}/graph')
+    os.system(f'mkdir -p {os.path.join(nephqa_root, "graph")}')
 
     for fname in sections:
-        grounded_path = f"{nephqa_root}/grounded/{fname}.grounded.jsonl"
-        output_path = f"{nephqa_root}/graph/{fname}.graph.adj.pk"
+        grounded_path = os.path.join(nephqa_root, "grounded", f"{fname}.grounded.jsonl")
+        output_path = os.path.join(nephqa_root, "graph", "{fname}.graph.adj.pk")
 
         if add_blank:
             res = generate_adj_data_from_grounded_concepts(grounded_path, k, 10,
