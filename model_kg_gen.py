@@ -10,7 +10,6 @@ import joblib
 import torch
 from transformers import AutoTokenizer, AutoModel, AutoConfig
 
-cpnet, cpnet_simple = None, None
 
 def generate_adj_data_for_model(data_root, sections=('dev', 'test', 'train'), k=3, add_blank=True, use_torch=True):
     nephqa_root = os.path.join(data_root, "nephqa")
@@ -223,7 +222,7 @@ def generate_adj_data_from_grounded_concepts(grounded_path, k, num_processes, bl
         concepts_to_adj_matrices_func = concepts_to_adj_matrices_4hop_all_pair
     else:
         raise ValueError(f"No concepts_to_adj_matrices_func for k={k}")
-    with Pool(num_processes) as p:
+    with Pool(num_processes, initializar=init_worker, initargs=(cpnet_simple,)) as p:
         res = list(tqdm(p.imap(concepts_to_adj_matrices_func, qa_data), total=len(qa_data)))
 
     lens = [len(e['concepts']) for e in res]
@@ -231,6 +230,11 @@ def generate_adj_data_from_grounded_concepts(grounded_path, k, num_processes, bl
           '95th', int(np.percentile(lens, 95)))
 
     return res
+
+
+def init_worker(kg):
+    global cpnet_simple
+    cpnet_simple = kg
 
 
 def concepts2adj(schema_graph, qc_ids, ac_ids, extra_nodes):
@@ -275,7 +279,6 @@ def concepts2adj_for_k_gt_2(schema_graph, qc_ids, ac_ids, extra_nodes):
 
 
 def concepts_to_adj_matrices_2hop_all_pair(data):
-    global cpnet_simple
     qc_ids, ac_ids = data
     qa_nodes = set(qc_ids) | set(ac_ids)
     extra_nodes = set()
@@ -293,7 +296,6 @@ def concepts_to_adj_matrices_2hop_all_pair(data):
 
 
 def concepts_to_adj_matrices_3hop_all_pair(data):
-    global cpnet_simple
     qc_ids, ac_ids = data
     qa_nodes = set(qc_ids) | set(ac_ids)
     extra_nodes = set()
@@ -319,7 +321,6 @@ def concepts_to_adj_matrices_3hop_all_pair(data):
 
 
 def concepts_to_adj_matrices_4hop_all_pair(data):
-    global cpnet_simple
     qc_ids, ac_ids = data
     qa_nodes = set(qc_ids) | set(ac_ids)
     extra_nodes = set()
