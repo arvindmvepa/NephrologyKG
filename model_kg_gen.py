@@ -152,19 +152,7 @@ def generate_adj_data_for_model(data_root, sections=('dev', 'test', 'train'), k=
         return graph
 
     KG = construct_graph()
-
-    def load_kg():
-        global cpnet, cpnet_simple
-        cpnet = KG
-        cpnet_simple = nx.Graph()
-        for u, v, data in cpnet.edges(data=True):
-            w = data['weight'] if 'weight' in data else 1.0
-            if cpnet_simple.has_edge(u, v):
-                cpnet_simple[u][v]['weight'] += w
-            else:
-                cpnet_simple.add_edge(u, v, weight=w)
-
-    load_kg()
+    cpnet_simple = load_kg(KG)
 
     os.system(f'mkdir -p {os.path.join(nephqa_root, "graph")}')
 
@@ -173,11 +161,11 @@ def generate_adj_data_for_model(data_root, sections=('dev', 'test', 'train'), k=
         output_path = os.path.join(nephqa_root, "graph", "{fname}.graph.adj.pk")
 
         if add_blank:
-            res = generate_adj_data_from_grounded_concepts(grounded_path, k, 10,
+            res = generate_adj_data_from_grounded_concepts(grounded_path, k, cpnet_simple, 10,
                                                            blank_q_item_ptr=blank_q_item_ptr,
                                                            blank_a_item_ptr=blank_a_item_ptr)
         else:
-            res = generate_adj_data_from_grounded_concepts(grounded_path, k, 10)
+            res = generate_adj_data_from_grounded_concepts(grounded_path, cpnet_simple, k, 10)
         print(f"Verification Sum (sum of all concept values): {sum([sum(r['concepts']) for r in res])}")
 
         with open(output_path, 'wb') as fout:
@@ -186,7 +174,19 @@ def generate_adj_data_for_model(data_root, sections=('dev', 'test', 'train'), k=
     generate_kg_embeddings(db_root, use_torch=use_torch)
 
 
-def generate_adj_data_from_grounded_concepts(grounded_path, k, num_processes, blank_q_item_ptr=None,
+def load_kg(KG):
+    cpnet = KG
+    cpnet_simple = nx.Graph()
+    for u, v, data in cpnet.edges(data=True):
+        w = data['weight'] if 'weight' in data else 1.0
+        if cpnet_simple.has_edge(u, v):
+            cpnet_simple[u][v]['weight'] += w
+        else:
+            cpnet_simple.add_edge(u, v, weight=w)
+    return cpnet_simple
+
+
+def generate_adj_data_from_grounded_concepts(grounded_path, k, cpnet_simple, num_processes, blank_q_item_ptr=None,
                                              blank_a_item_ptr=None):
     global concept2id
 
@@ -220,7 +220,7 @@ def generate_adj_data_from_grounded_concepts(grounded_path, k, num_processes, bl
     else:
         raise ValueError(f"No concepts_to_adj_matrices_func for k={k}")
     with Pool(num_processes) as p:
-        res = list(tqdm(p.imap(concepts_to_adj_matrices_func, qa_data), total=len(qa_data)))
+        res = list(tqdm(p.imap(concepts_to_adj_matrices_func, cpnet_simple, qa_data), total=len(qa_data)))
 
     lens = [len(e['concepts']) for e in res]
     print('mean #nodes', int(np.mean(lens)), 'med', int(np.median(lens)), '5th', int(np.percentile(lens, 5)),
@@ -270,8 +270,7 @@ def concepts2adj_for_k_gt_2(schema_graph, qc_ids, ac_ids, extra_nodes):
     return adj, cids
 
 
-def concepts_to_adj_matrices_2hop_all_pair(data):
-    global cpnet_simple
+def concepts_to_adj_matrices_2hop_all_pair(data, cpnet_simple):
     qc_ids, ac_ids = data
     qa_nodes = set(qc_ids) | set(ac_ids)
     extra_nodes = set()
@@ -288,8 +287,7 @@ def concepts_to_adj_matrices_2hop_all_pair(data):
     return {'adj': adj, 'concepts': concepts, 'qmask': qmask, 'amask': amask, 'cid2score': None}
 
 
-def concepts_to_adj_matrices_3hop_all_pair(data):
-    global cpnet_simple
+def concepts_to_adj_matrices_3hop_all_pair(data, cpnet_simple):
     qc_ids, ac_ids = data
     qa_nodes = set(qc_ids) | set(ac_ids)
     extra_nodes = set()
@@ -314,8 +312,7 @@ def concepts_to_adj_matrices_3hop_all_pair(data):
     return {'adj': adj, 'concepts': concepts, 'qmask': qmask, 'amask': amask, 'cid2score': None}
 
 
-def concepts_to_adj_matrices_4hop_all_pair(data):
-    global cpnet_simple
+def concepts_to_adj_matrices_4hop_all_pair(data, cpnet_simple):
     qc_ids, ac_ids = data
     qa_nodes = set(qc_ids) | set(ac_ids)
     extra_nodes = set()
