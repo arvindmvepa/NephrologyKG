@@ -10,6 +10,7 @@ import joblib
 import torch
 from transformers import AutoTokenizer, AutoModel, AutoConfig
 
+cpnet, cpnet_simple = None, None
 
 def generate_adj_data_for_model(data_root, sections=('dev', 'test', 'train'), k=3, add_blank=True, use_torch=True):
     nephqa_root = os.path.join(data_root, "nephqa")
@@ -152,7 +153,7 @@ def generate_adj_data_for_model(data_root, sections=('dev', 'test', 'train'), k=
         return graph
 
     KG = construct_graph()
-    cpnet_simple = load_kg(KG)
+    load_kg(KG)
 
     os.system(f'mkdir -p {os.path.join(nephqa_root, "graph")}')
 
@@ -175,6 +176,7 @@ def generate_adj_data_for_model(data_root, sections=('dev', 'test', 'train'), k=
 
 
 def load_kg(KG):
+    global cpnet, cpnet_simple
     cpnet = KG
     cpnet_simple = nx.Graph()
     for u, v, data in cpnet.edges(data=True):
@@ -183,10 +185,9 @@ def load_kg(KG):
             cpnet_simple[u][v]['weight'] += w
         else:
             cpnet_simple.add_edge(u, v, weight=w)
-    return cpnet_simple
 
 
-def generate_adj_data_from_grounded_concepts(grounded_path, k, cpnet_simple, num_processes, blank_q_item_ptr=None,
+def generate_adj_data_from_grounded_concepts(grounded_path, k, num_processes, blank_q_item_ptr=None,
                                              blank_a_item_ptr=None):
     global concept2id
 
@@ -220,7 +221,7 @@ def generate_adj_data_from_grounded_concepts(grounded_path, k, cpnet_simple, num
     else:
         raise ValueError(f"No concepts_to_adj_matrices_func for k={k}")
     with Pool(num_processes) as p:
-        res = list(tqdm(p.imap(lambda x: concepts_to_adj_matrices_func(x, cpnet_simple), qa_data), total=len(qa_data)))
+        res = list(tqdm(p.imap(lambda x: concepts_to_adj_matrices_func, qa_data), total=len(qa_data)))
 
     lens = [len(e['concepts']) for e in res]
     print('mean #nodes', int(np.mean(lens)), 'med', int(np.median(lens)), '5th', int(np.percentile(lens, 5)),
@@ -270,7 +271,7 @@ def concepts2adj_for_k_gt_2(schema_graph, qc_ids, ac_ids, extra_nodes):
     return adj, cids
 
 
-def concepts_to_adj_matrices_2hop_all_pair(data, cpnet_simple):
+def concepts_to_adj_matrices_2hop_all_pair(data):
     qc_ids, ac_ids = data
     qa_nodes = set(qc_ids) | set(ac_ids)
     extra_nodes = set()
@@ -287,7 +288,7 @@ def concepts_to_adj_matrices_2hop_all_pair(data, cpnet_simple):
     return {'adj': adj, 'concepts': concepts, 'qmask': qmask, 'amask': amask, 'cid2score': None}
 
 
-def concepts_to_adj_matrices_3hop_all_pair(data, cpnet_simple):
+def concepts_to_adj_matrices_3hop_all_pair(data):
     qc_ids, ac_ids = data
     qa_nodes = set(qc_ids) | set(ac_ids)
     extra_nodes = set()
@@ -312,7 +313,7 @@ def concepts_to_adj_matrices_3hop_all_pair(data, cpnet_simple):
     return {'adj': adj, 'concepts': concepts, 'qmask': qmask, 'amask': amask, 'cid2score': None}
 
 
-def concepts_to_adj_matrices_4hop_all_pair(data, cpnet_simple):
+def concepts_to_adj_matrices_4hop_all_pair(data):
     qc_ids, ac_ids = data
     qa_nodes = set(qc_ids) | set(ac_ids)
     extra_nodes = set()
