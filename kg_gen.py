@@ -12,8 +12,8 @@ def generate_khop_kg_from_db(data_root, sections=('dev', 'test', 'train'), k=2, 
     kg_subgraphs = []
     for section in sections:
         print(f"Start {k}hop for {section} in {data_root}")
-        nephqa_root = f'{data_root}/nephqa'
-        linked_q_file_path = f'{nephqa_root}/statement/{section}.statement.umls_linked.jsonl'
+        nephqa_root = os.path.join(data_root, 'nephqa')
+        linked_q_file_path = os.path.join(nephqa_root, 'statement', f'{section}.statement.umls_linked.jsonl')
         start = time.time()
         subgraphs = get_k_subgraph_from_db(linked_q_file_path, k=k, user=user, password=password, db=db)
         end = time.time()
@@ -23,7 +23,7 @@ def generate_khop_kg_from_db(data_root, sections=('dev', 'test', 'train'), k=2, 
         print_subgraph_stats(kg_subgraphs, k=k)
 
     print("Saving KG")
-    db_dir = f"{data_root}/ddb"
+    db_dir = os.path.join(data_root, "ddb")
     if not os.path.exists(db_dir):
         os.makedirs(db_dir)
     save_entities_file = os.path.join(db_dir, "ddb_names.json")
