@@ -158,7 +158,7 @@ def generate_adj_data_for_model(data_root, sections=('dev', 'test', 'train'), k=
 
     for fname in sections:
         grounded_path = os.path.join(nephqa_root, "grounded", f"{fname}.grounded.jsonl")
-        output_path = os.path.join(nephqa_root, "graph", "{fname}.graph.adj.pk")
+        output_path = os.path.join(nephqa_root, "graph", f"{fname}.graph.adj.pk")
 
         if add_blank:
             res = generate_adj_data_from_grounded_concepts(grounded_path, k, 10, blank_q_item_ptr=blank_q_item_ptr,
