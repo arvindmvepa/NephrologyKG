@@ -275,6 +275,7 @@ def concepts2adj_for_k_gt_2(schema_graph, qc_ids, ac_ids, extra_nodes):
 
 
 def concepts_to_adj_matrices_2hop_all_pair(data):
+    global cpnet_simple
     qc_ids, ac_ids = data
     qa_nodes = set(qc_ids) | set(ac_ids)
     extra_nodes = set()
@@ -292,6 +293,7 @@ def concepts_to_adj_matrices_2hop_all_pair(data):
 
 
 def concepts_to_adj_matrices_3hop_all_pair(data):
+    global cpnet_simple
     qc_ids, ac_ids = data
     qa_nodes = set(qc_ids) | set(ac_ids)
     extra_nodes = set()
@@ -317,6 +319,7 @@ def concepts_to_adj_matrices_3hop_all_pair(data):
 
 
 def concepts_to_adj_matrices_4hop_all_pair(data):
+    global cpnet_simple
     qc_ids, ac_ids = data
     qa_nodes = set(qc_ids) | set(ac_ids)
     extra_nodes = set()
