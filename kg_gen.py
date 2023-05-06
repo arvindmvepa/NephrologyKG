@@ -7,14 +7,15 @@ import numpy as np
 from tqdm import tqdm
 
 
-def generate_khop_kg_from_db(data_root, sections=('dev', 'test', 'train'), k=2, return_stats=True):
+def generate_khop_kg_from_db(data_root, sections=('dev', 'test', 'train'), k=2, user='root', password='', db='umls',
+                             return_stats=True):
     kg_subgraphs = []
     for section in sections:
         print(f"Start {k}hop for {section} in {data_root}")
         nephqa_root = f'{data_root}/nephqa'
         linked_q_file_path = f'{nephqa_root}/statement/{section}.statement.umls_linked.jsonl'
         start = time.time()
-        subgraphs = get_k_subgraph_from_db(linked_q_file_path, k=k)
+        subgraphs = get_k_subgraph_from_db(linked_q_file_path, k=k, user=user, password=password, db=db)
         end = time.time()
         print(f"Generated Subgraphs. Time elapsed (s): {(end - start)}")
         kg_subgraphs = kg_subgraphs + subgraphs

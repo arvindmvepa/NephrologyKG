@@ -182,9 +182,9 @@ async def get_fourhop_subgraph(linked_question_file):
     return subgraphs
 
 
-def get_k_subgraph_from_db(linked_question_file, k=2):
+def get_k_subgraph_from_db(linked_question_file, k=2, user='root', password='', db='umls'):
     """Get k-hop subgraphs from question_cuis and answer_cuis from db"""
-    db_cnx = connect_db()
+    db_cnx = connect_db(user=user, password=password, db=db)
     cursor = db_cnx.cursor()
     question_cui_name_pairs, answer_cui_name_pairs = get_concepts_from_questions(linked_question_file)
     question_cui_name_pairs, answer_cui_name_pairs = question_cui_name_pairs, answer_cui_name_pairs
