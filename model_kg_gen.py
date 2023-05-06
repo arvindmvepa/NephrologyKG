@@ -162,11 +162,10 @@ def generate_adj_data_for_model(data_root, sections=('dev', 'test', 'train'), k=
         output_path = os.path.join(nephqa_root, "graph", "{fname}.graph.adj.pk")
 
         if add_blank:
-            res = generate_adj_data_from_grounded_concepts(grounded_path, k, cpnet_simple, 10,
-                                                           blank_q_item_ptr=blank_q_item_ptr,
+            res = generate_adj_data_from_grounded_concepts(grounded_path, k, 10, blank_q_item_ptr=blank_q_item_ptr,
                                                            blank_a_item_ptr=blank_a_item_ptr)
         else:
-            res = generate_adj_data_from_grounded_concepts(grounded_path, cpnet_simple, k, 10)
+            res = generate_adj_data_from_grounded_concepts(grounded_path, k, 10)
         print(f"Verification Sum (sum of all concept values): {sum([sum(r['concepts']) for r in res])}")
 
         with open(output_path, 'wb') as fout:
