@@ -222,7 +222,9 @@ def generate_adj_data_from_grounded_concepts(grounded_path, k, num_processes, bl
         concepts_to_adj_matrices_func = concepts_to_adj_matrices_4hop_all_pair
     else:
         raise ValueError(f"No concepts_to_adj_matrices_func for k={k}")
-    with Pool(num_processes, initializer=init_worker, initargs=(cpnet_simple,)) as p:
+
+    # need init_worker to share global variables among multiple processes
+    with Pool(num_processes, initializer=init_worker, initargs=(cpnet, cpnet_simple, id2relation)) as p:
         res = list(tqdm(p.imap(concepts_to_adj_matrices_func, qa_data), total=len(qa_data)))
 
     lens = [len(e['concepts']) for e in res]
@@ -232,13 +234,14 @@ def generate_adj_data_from_grounded_concepts(grounded_path, k, num_processes, bl
     return res
 
 
-def init_worker(kg):
-    global cpnet_simple
-    cpnet_simple = kg
+def init_worker(cpnet_, cpnet_simple_, id2relation_):
+    global cpnet, cpnet_simple, id2relation
+    cpnet = cpnet_
+    cpnet_simple = cpnet_simple_
+    id2relation = id2relation_
 
 
 def concepts2adj(schema_graph, qc_ids, ac_ids, extra_nodes):
-    global id2relation, cpnet
     cids = np.array(schema_graph, dtype=np.int32)
     n_rel = len(id2relation)
     n_node = cids.shape[0]
