@@ -220,7 +220,7 @@ def generate_adj_data_from_grounded_concepts(grounded_path, k, cpnet_simple, num
     else:
         raise ValueError(f"No concepts_to_adj_matrices_func for k={k}")
     with Pool(num_processes) as p:
-        res = list(tqdm(p.imap(concepts_to_adj_matrices_func, cpnet_simple, qa_data), total=len(qa_data)))
+        res = list(tqdm(p.imap(lambda x: concepts_to_adj_matrices_func(x, cpnet_simple), qa_data), total=len(qa_data)))
 
     lens = [len(e['concepts']) for e in res]
     print('mean #nodes', int(np.mean(lens)), 'med', int(np.median(lens)), '5th', int(np.percentile(lens, 5)),
