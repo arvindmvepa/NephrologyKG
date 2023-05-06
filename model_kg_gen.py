@@ -154,10 +154,6 @@ def generate_adj_data_for_model(data_root, sections=('dev', 'test', 'train'), k=
     KG = construct_graph()
     load_kg(KG)
 
-    print(f"cpnet_simple: {cpnet_simple}")
-    import sys
-    sys.stdout.flush()
-
     os.system(f'mkdir -p {os.path.join(nephqa_root, "graph")}')
 
     for fname in sections:
