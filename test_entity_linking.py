@@ -1,23 +1,26 @@
 import spacy
 from scispacy.linking import EntityLinker
+from spacy.tokens import Span
 
 EntityLinker.name = 'scispacy_linker'
 nlp = spacy.load("en_core_sci_sm")
 nlp.add_pipe("scispacy_linker", config={"resolve_abbreviations": True, "linker_name": "umls"})
+doc_string = "GDG\nevidence\nadverse outcomes\npeople\nCKD\nGFR\nCKD\nmanagement\nprognosis\npeople" + \
+			 "\nreduced but stable\nGFR\nprogressive decline\nGFR\nevidence\ndecline\nGFR\nkidney disease\n" + \
+			 "‘natural’ decline\nageing"
+doc = nlp(doc_string)
 
-doc = nlp("Spinal and bulbar muscular atrophy (SBMA) is an \
-           inherited motor neuron disease caused by the expansion \
-           of a polyglutamine tract within the androgen receptor (AR). \
-           SBMA can be caused by this easily.")
-
-# Let's look at a random entity!
-entity = doc.ents[1]
-
-print("Name: ", entity)
-
-# Each entity is linked to UMLS with a score
-# (currently just char-3gram matching).
+# get linking results on mentions mined by LLM and then pre-processed by spacy methods
 linker = nlp.get_pipe("scispacy_linker")
-print("UMLS concepts: ", entity._.kb_ents)
-for umls_ent in entity._.kb_ents:
-	print(linker.kb.cui_to_entity[umls_ent[0]])
+print("results from spacy using their NER and linking on mentions")
+for entity in doc.ents:
+	cui = entity._.kb_ents[0][0]
+	print(entity + ", " + cui)
+
+
+print("results from spacy using no NER and linking on mentions")
+entities = doc_string.split("\n")
+spans = [Span(doc, start, start+len(entity.split()), label="ENTITY") for start, entity in enumerate(entities)]
+for span in spans:
+	entity = linker(span)
+	print(span.text + ", " + span._.kb_ents)
