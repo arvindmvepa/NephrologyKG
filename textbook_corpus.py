@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 from transformers import AutoTokenizer
+from tqdm import tqdm
 
 # Specify the tokenizer for LLAMA 2 (adjust as necessary)
 tokenizer = AutoTokenizer.from_pretrained("gpt2")
@@ -10,7 +11,7 @@ def prepare_data_and_save_to_csv(directory, output_csv_path, chunk_size=1024):
     data = []
     unique_id = 0
 
-    for filename in os.listdir(directory):
+    for filename in tqdm(sorted(os.listdir(directory))):
         if filename.endswith(".txt"):  # Adjust this condition based on your file types
             file_path = os.path.join(directory, filename)
             with open(file_path, 'r', encoding='utf-8') as file:
