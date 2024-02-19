@@ -3,7 +3,7 @@ import pandas as pd
 from transformers import AutoTokenizer
 
 # Specify the tokenizer for LLAMA 2 (adjust as necessary)
-tokenizer = AutoTokenizer.from_pretrained("gpt3")
+tokenizer = AutoTokenizer.from_pretrained("gpt2")
 
 
 def prepare_data_and_save_to_csv(directory, output_csv_path, chunk_size=1024):
