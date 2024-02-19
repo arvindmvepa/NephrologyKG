@@ -1,0 +1,15 @@
+chardet==5.2.0
+charset-normalizer==2.1.0
+fsspec==2024.2.0
+huggingface-hub==0.20.3
+mkl-service==2.4.0
+packaging==23.2
+regex==2023.12.25
+safetensors==0.4.2
+sentencepiece==0.1.99
+tokenizers==0.15.2
+torch==2.2.0
+torchaudio==2.2.0
+torchvision==0.17.0
+tqdm==4.66.2
+transformers==4.37.2

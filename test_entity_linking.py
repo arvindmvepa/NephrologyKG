@@ -14,8 +14,11 @@ doc = nlp(doc_string)
 linker = nlp.get_pipe("scispacy_linker")
 print("results from spacy using their NER and linking on mentions")
 for entity in doc.ents:
-	cui = entity._.kb_ents[0][0]
-	print(entity + ", " + cui)
+	if entity._.kb_ents:
+		cui = entity._.kb_ents[0][0]
+		print(str(entity).strip() + ", " + str(cui))
+	else:
+		print(str(entity).strip() + ", None")
 
 
 print("results from spacy using no NER and linking on mentions")
@@ -23,4 +26,8 @@ entities = doc_string.split("\n")
 spans = [Span(doc, start, start+len(entity.split()), label="ENTITY") for start, entity in enumerate(entities)]
 for span in spans:
 	entity = linker(span)
-	print(span.text + ", " + span._.kb_ents)
+	if span._.kb_ents:
+		cui = entity._.kb_ents[0][0]
+		print(str(span.text).strip() + ", " + cui)
+	else:
+		print(str(span.text).strip() + ", None")
