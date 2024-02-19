@@ -7,7 +7,19 @@ from tqdm import tqdm
 tokenizer = AutoTokenizer.from_pretrained("gpt2")
 
 
-def prepare_data_and_save_to_csv(directory, output_csv_path, chunk_size=1024):
+def clean_text(text):
+    """
+    Clean and preprocess text by removing excessive whitespaces and optionally
+    other non-standard formatting.
+    """
+    # Remove leading and trailing whitespaces
+    text = text.strip()
+    # Replace multiple whitespace characters with a single space
+    text = ' '.join(text.split())
+    return text
+
+
+def prepare_data_and_save_to_csv(directory, output_csv_path, chunk_size=1024, clean=True):
     data = []
     unique_id = 0
 
@@ -16,6 +28,8 @@ def prepare_data_and_save_to_csv(directory, output_csv_path, chunk_size=1024):
             file_path = os.path.join(directory, filename)
             with open(file_path, 'r', encoding='utf-8') as file:
                 text = file.read()
+                if clean:
+                    text = clean_text(text)
 
                 # Tokenize the text and split into chunks
                 tokens = tokenizer.encode(text, truncation=True, max_length=None)
