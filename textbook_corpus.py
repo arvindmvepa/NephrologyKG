@@ -32,7 +32,7 @@ def prepare_data_and_save_to_csv(directory, output_csv_path, chunk_size=1024, cl
                     text = clean_text(text)
 
                 # Tokenize the text and split into chunks
-                tokens = tokenizer.encode(text, truncation=True, max_length=None)
+                tokens = tokenizer.encode(text, truncation=False, max_length=None)
                 for i in range(0, len(tokens), chunk_size):
                     chunk_tokens = tokens[i:i + chunk_size + 1]  # +1 to include the target token
                     if len(chunk_tokens) == chunk_size + 1:
