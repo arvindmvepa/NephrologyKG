@@ -22,6 +22,7 @@ def clean_text(text):
 def prepare_data_and_save_to_csv(directory, output_csv_path, chunk_size=1024, clean=True):
     data = []
     unique_id = 0
+    chunk_and_target_size = chunk_size + 1  # +1 for the target token
 
     for filename in tqdm(sorted(os.listdir(directory))):
         if filename.endswith(".txt"):  # Adjust this condition based on your file types
@@ -33,9 +34,9 @@ def prepare_data_and_save_to_csv(directory, output_csv_path, chunk_size=1024, cl
 
                 # Tokenize the text and split into chunks
                 tokens = tokenizer.encode(text, truncation=False, max_length=None)
-                for i in range(0, len(tokens)):
-                    chunk_tokens = tokens[i:i + chunk_size + 1]  # +1 to include the target token
-                    if len(chunk_tokens) == chunk_size + 1:
+                for i in range(0, len(tokens), chunk_and_target_size):
+                    chunk_tokens = tokens[i:i + chunk_and_target_size]  # +1 to include the target token
+                    if len(chunk_tokens) == chunk_and_target_size:
                         input_ids = chunk_tokens[:-1]
                         label = chunk_tokens[-1]
                         input_text = tokenizer.decode(input_ids)
