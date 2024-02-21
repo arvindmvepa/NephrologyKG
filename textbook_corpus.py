@@ -33,13 +33,13 @@ def prepare_data_and_save_to_csv(directory, output_csv_path, chunk_size=1024, cl
 
                 # Tokenize the text and split into chunks
                 tokens = tokenizer.encode(text, truncation=False, max_length=None)
-                for i in range(0, len(tokens), chunk_size):
+                for i in range(0, len(tokens)):
                     chunk_tokens = tokens[i:i + chunk_size + 1]  # +1 to include the target token
                     if len(chunk_tokens) == chunk_size + 1:
                         input_ids = chunk_tokens[:-1]
-                        labels = chunk_tokens[1:]
+                        label = chunk_tokens[-1]
                         input_text = tokenizer.decode(input_ids)
-                        target_text = tokenizer.decode(labels)
+                        target_text = tokenizer.decode(label)
                         data.append([unique_id, input_text, target_text])
                         unique_id += 1
 
@@ -51,6 +51,7 @@ def prepare_data_and_save_to_csv(directory, output_csv_path, chunk_size=1024, cl
 
 
 # Example usage
+chunk_size = 512
 directory = "textbook_txt_files"
-output_csv_path = "input_target_pairs.csv"
+output_csv_path = f"input_target_pairs_gp2tk_toklen_{chunk_size}_clean_no_trunc_1target.csv"
 prepare_data_and_save_to_csv(directory, output_csv_path, chunk_size=512)
