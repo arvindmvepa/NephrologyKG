@@ -41,7 +41,7 @@ def train_model(model, tokenizer, data, save_model_name="neph_model"):
 
     trainer = transformers.Trainer(
         model=model,
-        train_dataset=data,
+        train_dataset=data["train"],
         args=training_args,
         data_collator=data_collator,
     )
@@ -96,8 +96,7 @@ def load_dataset_from_file(data_path, tokenizer):
     def generate_and_tokenize_prompt(data_point):
         tokenized_full_prompt = tokenizer(data_point, padding=True, truncation=True)
         return tokenized_full_prompt
-    print("data: ", data)
-    data = data.shuffle().map(generate_and_tokenize_prompt)
+    data = data["train"].shuffle().map(generate_and_tokenize_prompt)
     return data
 
 
@@ -123,7 +122,7 @@ def tokenize_dataset(data, tokenizer, block_size=512):
         preprocess_function,
         batched=True,
         num_proc=4,
-        remove_columns=data.column_names,
+        remove_columns=data["train"].column_names,
     )
     lm_dataset = tokenized_data.map(group_texts, batched=True, num_proc=4)
     return lm_dataset
