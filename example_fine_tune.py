@@ -59,7 +59,7 @@ def dataset_preprocess():
     dataset_df.to_csv('Web_NLG.csv', index=False)
 
 
-def load_dataset():
+def load_dataset_():
     data = load_dataset("csv", data_files="Web_NLG.csv")
     def generate_prompt(data_point):
         return f"""
@@ -225,9 +225,9 @@ def test2_text_gen(model, tokenizer, device="cuda:0"):
 if __name__ == '__main__':
     device = "cuda:0"
     model, tokenizer = load_llm_from_huggingface()
-    test1_text_gen(model, tokenizer, device=device)
+    #test1_text_gen(model, tokenizer, device=device)
     dataset_preprocess()
-    data = load_dataset()
+    data = load_dataset_()
     train_llm(model, data)
     model, tokenizer = load_llm()
     test2_text_gen(model, tokenizer, device=device)
