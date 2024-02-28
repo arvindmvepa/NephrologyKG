@@ -96,6 +96,7 @@ def load_dataset_from_file(data_path, tokenizer):
     def generate_and_tokenize_prompt(data_point):
         tokenized_full_prompt = tokenizer(data_point, padding=True, truncation=True)
         return tokenized_full_prompt
+    print("data[train]: ", data["train"])
     data = data["train"].shuffle().map(generate_and_tokenize_prompt)
     return data
 
