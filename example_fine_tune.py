@@ -223,11 +223,13 @@ def test2_text_gen(model, tokenizer, device="cuda:0"):
     print(generate_response(prompt))
 
 if __name__ == '__main__':
+    dataset_preprocess()
+    data = load_dataset_()
+
     device = "cuda:0"
     model, tokenizer = load_llm_from_huggingface()
     #test1_text_gen(model, tokenizer, device=device)
-    dataset_preprocess()
-    data = load_dataset_()
+
     train_llm(model, data)
     model, tokenizer = load_llm()
     test2_text_gen(model, tokenizer, device=device)
