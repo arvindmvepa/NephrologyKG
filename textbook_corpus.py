@@ -3,8 +3,8 @@ import pandas as pd
 from transformers import AutoTokenizer
 from tqdm import tqdm
 
-# Specify the tokenizer for LLAMA 2 (adjust as necessary)
-tokenizer = AutoTokenizer.from_pretrained("gpt2")
+tokenizer_name="HuggingFaceH4/zephyr-7b-beta"
+tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
 
 
 def clean_text(text):
@@ -38,14 +38,12 @@ def prepare_data_and_save_to_csv(directory, output_csv_path, chunk_size=1024, cl
                     chunk_tokens = tokens[i:i + chunk_and_target_size]  # +1 to include the target token
                     if len(chunk_tokens) == chunk_and_target_size:
                         input_ids = chunk_tokens[:-1]
-                        label = chunk_tokens[-1]
                         input_text = tokenizer.decode(input_ids)
-                        target_text = tokenizer.decode(label)
-                        data.append([unique_id, input_text, target_text])
+                        data.append([input_text])
                         unique_id += 1
 
     # Convert the list to a DataFrame
-    df = pd.DataFrame(data, columns=["ID", "Input", "Target"])
+    df = pd.DataFrame(data, columns=["text"])
 
     # Save to CSV
     df.to_csv(output_csv_path, index=False)
@@ -54,5 +52,5 @@ def prepare_data_and_save_to_csv(directory, output_csv_path, chunk_size=1024, cl
 # Example usage
 chunk_size = 512
 directory = "textbook_txt_files"
-output_csv_path = f"input_target_pairs_gp2tk_toklen_{chunk_size}_clean_no_trunc_1target.csv"
+output_csv_path = f"input_target_pairs_zephyr7bbetatk_toklen_{chunk_size}_clean_no_trunc_1target.csv"
 prepare_data_and_save_to_csv(directory, output_csv_path, chunk_size=512)
