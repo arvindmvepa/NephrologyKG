@@ -42,6 +42,7 @@ def train_model(model, tokenizer, data, save_model_name="neph_model"):
     trainer = transformers.Trainer(
         model=model,
         train_dataset=data["train"],
+        eval_dataset=data["test"],
         args=training_args,
         data_collator=data_collator,
     )
