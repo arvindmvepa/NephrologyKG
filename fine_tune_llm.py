@@ -50,8 +50,13 @@ def train_model(model, tokenizer, data, save_model_name="neph_model"):
     model.save_pretrained(save_model_name)
 
 
-def load_llm_from_huggingface(model_name="HuggingFaceH4/zephyr-7b-beta", tokenizer_name="HuggingFaceH4/zephyr-7b-beta",
-                              use_quantization=False, r=16, lora_alpha=32,
+def load_tokenizer_from_huggingface(tokenizer_name="HuggingFaceH4/zephyr-7b-beta"):
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
+    tokenizer.pad_token = tokenizer.eos_token
+    return tokenizer
+
+
+def load_llm_from_huggingface(model_name="HuggingFaceH4/zephyr-7b-beta", use_quantization=False, r=16, lora_alpha=32,
                               target_modules=("q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"),
                               lora_dropout=0.1, bias="none", task_type="CAUSAL_LM"):
     if use_quantization:
@@ -71,9 +76,6 @@ def load_llm_from_huggingface(model_name="HuggingFaceH4/zephyr-7b-beta", tokeniz
             device_map="auto",
             trust_remote_code=True)
 
-    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
-    tokenizer.pad_token = tokenizer.eos_token
-
     model.gradient_checkpointing_enable()
     model = prepare_model_for_kbit_training(model)
     print(model)
@@ -88,12 +90,12 @@ def load_llm_from_huggingface(model_name="HuggingFaceH4/zephyr-7b-beta", tokeniz
     )
 
     model = get_peft_model(model, config)
-    return model, tokenizer
+    return model
 
 
 def load_dataset_from_file(data_path):
     data = load_dataset("csv", data_files=data_path)
-    print("data: ", data)
+    data = data['train']
     data = data.train_test_split(test_size=0.2)
     return data
 
@@ -129,7 +131,8 @@ if __name__ == '__main__':
     block_size = 512
     #data_path = f"input_target_pairs_zephyr7bbetatk_toklen_{block_size}_clean_no_trunc_1target.csv"
     data_path = "neph.csv"
-    model, tokenizer = load_llm_from_huggingface()
     data = load_dataset_from_file(data_path)
+    tokenizer = load_tokenizer_from_huggingface()
     processed_data = process_dataset(data, tokenizer, block_size=block_size)
+    model = load_llm_from_huggingface()
     train_model(model, tokenizer, processed_data)
