@@ -36,7 +36,7 @@ def dataset_preprocess():
     # combine both the training and test
     df_train = pd.DataFrame(data_train)
     df_test = pd.DataFrame(data_test)
-    df_all = df_train.append(df_test)
+    df_all = pd.concat([df_train, df_test], ignore_index=True)
 
     # extract to formate easier to use
     text = []
