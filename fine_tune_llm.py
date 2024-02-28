@@ -93,15 +93,16 @@ def load_llm_from_huggingface(model_name="HuggingFaceH4/zephyr-7b-beta", tokeniz
 
 def load_dataset_from_file(data_path, tokenizer):
     data = load_dataset("csv", data_files=data_path)
-    def generate_and_tokenize_prompt(data_point):
-        tokenized_full_prompt = tokenizer(data_point, padding=True, truncation=True)
-        return tokenized_full_prompt
-    print("data[train]: ", data["train"])
-    data = data["train"].shuffle().map(generate_and_tokenize_prompt)
-    return data
+    def tokenize_content(data_point):
+        tokenized_content = {}
+        print(data_point["text"])
+        tokenized_content["text"] = tokenizer(data_point["text"], padding=True, truncation=True)
+        return tokenized_content
+    data_ = data["train"].shuffle().map(tokenize_content)
+    return data_
 
 
-def tokenize_dataset(data, tokenizer, block_size=512):
+def process_dataset(data, tokenizer, block_size=512):
     def preprocess_function(examples):
         return tokenizer([" ".join(x) for x in examples["text"]])
     def group_texts(examples):
@@ -134,5 +135,5 @@ if __name__ == '__main__':
     data_path = f"input_target_pairs_zephyr7bbetatk_toklen_{block_size}_clean_no_trunc_1target.csv"
     model, tokenizer = load_llm_from_huggingface()
     data = load_dataset_from_file(data_path, tokenizer)
-    tk_data = tokenize_dataset(data, tokenizer, block_size=block_size)
+    tk_data = process_dataset(data, tokenizer, block_size=block_size)
     train_model(model, tokenizer, tk_data)
