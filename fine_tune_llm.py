@@ -93,6 +93,7 @@ def load_llm_from_huggingface(model_name="HuggingFaceH4/zephyr-7b-beta", tokeniz
 
 def load_dataset_from_file(data_path):
     data = load_dataset("csv", data_files=data_path)
+    print("data: ", data)
     data = data.train_test_split(test_size=0.2)
     return data
 
