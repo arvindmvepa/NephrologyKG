@@ -53,7 +53,7 @@ def train_model(model, tokenizer, data, save_model_name="neph_model"):
 def load_llm_from_huggingface(model_name="HuggingFaceH4/zephyr-7b-beta", tokenizer_name="HuggingFaceH4/zephyr-7b-beta",
                               use_quantization=False, r=16, lora_alpha=32,
                               target_modules=("q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"),
-                              lora_dropout=0.1, bias=None, task_type="CAUSAL_LM"):
+                              lora_dropout=0.1, bias="none", task_type="CAUSAL_LM"):
     if use_quantization:
         bnb_config = BitsAndBytesConfig(
             load_in_4bit=True,
