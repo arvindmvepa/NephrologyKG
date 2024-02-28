@@ -95,7 +95,6 @@ def load_dataset_from_file(data_path, tokenizer):
     data = load_dataset("csv", data_files=data_path)
     def tokenize_content(data_point):
         tokenized_content = {}
-        print(data_point["text"])
         tokenized_content["text"] = tokenizer(data_point["text"], padding=True, truncation=True)
         return tokenized_content
     data_ = data["train"].shuffle().map(tokenize_content)
@@ -132,7 +131,8 @@ def process_dataset(data, tokenizer, block_size=512):
 
 if __name__ == '__main__':
     block_size = 512
-    data_path = f"input_target_pairs_zephyr7bbetatk_toklen_{block_size}_clean_no_trunc_1target.csv"
+    #data_path = f"input_target_pairs_zephyr7bbetatk_toklen_{block_size}_clean_no_trunc_1target.csv"
+    data_path = "neph.csv"
     model, tokenizer = load_llm_from_huggingface()
     data = load_dataset_from_file(data_path, tokenizer)
     tk_data = process_dataset(data, tokenizer, block_size=block_size)

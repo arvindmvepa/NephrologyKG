@@ -49,8 +49,29 @@ def prepare_data_and_save_to_csv(directory, output_csv_path, chunk_size=1024, cl
     df.to_csv(output_csv_path, index=False)
 
 
-# Example usage
-chunk_size = 512
-directory = "textbook_txt_files"
-output_csv_path = f"input_target_pairs_zephyr7bbetatk_toklen_{chunk_size}_clean_no_trunc_1target.csv"
-prepare_data_and_save_to_csv(directory, output_csv_path, chunk_size=512)
+def standard_save_to_csv(directory, output_csv_path, clean=True):
+    data = []
+
+    for filename in tqdm(sorted(os.listdir(directory))):
+        if filename.endswith(".txt"):  # Adjust this condition based on your file types
+            file_path = os.path.join(directory, filename)
+            with open(file_path, 'r', encoding='utf-8') as file:
+                text = file.read()
+                if clean:
+                    text = clean_text(text)
+                if text:
+                    data.append([text])
+
+    # Convert the list to a DataFrame
+    df = pd.DataFrame(data, columns=["text"])
+
+    # Save to CSV
+    df.to_csv(output_csv_path, index=False)
+
+if __name__ == '__main__':
+    chunk_size = 512
+    directory = "textbook_txt_files"
+    #output_csv_path = f"input_target_pairs_zephyr7bbetatk_toklen_{chunk_size}_clean_no_trunc_1target.csv"
+    #prepare_data_and_save_to_csv(directory, output_csv_path, chunk_size=512)
+    output_csv_path = f"neph.csv"
+    standard_save_to_csv(directory, output_csv_path)
