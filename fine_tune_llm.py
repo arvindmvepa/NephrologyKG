@@ -24,7 +24,7 @@ def train_model(model, tokenizer, data, save_model_name="neph_model"):
     data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False)
     OUTPUT_DIR = "experiments"
     training_args = transformers.TrainingArguments(
-        per_device_train_batch_size=2,
+        per_device_train_batch_size=8,
         gradient_accumulation_steps=4,
         num_train_epochs=3,
         learning_rate=2e-4,
