@@ -20,7 +20,7 @@ from transformers import (
 
 
 def train_model(model, tokenizer, data, optimizer="paged_adamw_32bit", fp16=True, per_device_train_batch_size=1,
-                save_model_name="neph_model", output_dir="exp"):
+                eval_steps=2000, save_model_name="neph_model", output_dir="exp"):
     tokenizer.pad_token = tokenizer.eos_token
     data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False)
     training_args = transformers.TrainingArguments(
@@ -33,6 +33,7 @@ def train_model(model, tokenizer, data, optimizer="paged_adamw_32bit", fp16=True
         logging_steps=1,
         output_dir=output_dir,
         evaluation_strategy="steps",
+        eval_steps=eval_steps,
         optim=optimizer,
         lr_scheduler_type="cosine",
         warmup_ratio=0.05,
@@ -134,6 +135,7 @@ if __name__ == '__main__':
     fp16 = True
     optimizer = "ADAMW_ANYPRECISION"
     per_device_train_batch_size=8
+    eval_steps=2000
     #data_path = f"input_target_pairs_zephyr7bbetatk_toklen_{block_size}_clean_no_trunc_1target.csv"
     data_path = "neph.csv"
     save_model_name = f"neph_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}"
@@ -143,5 +145,5 @@ if __name__ == '__main__':
     processed_data = process_dataset(data, tokenizer, block_size=block_size)
     model = load_llm_from_huggingface(use_quantization=False)
     train_model(model, tokenizer, processed_data, optimizer=optimizer,
-                per_device_train_batch_size=per_device_train_batch_size, fp16=fp16, save_model_name=save_model_name,
-                output_dir=output_dir)
+                per_device_train_batch_size=per_device_train_batch_size, fp16=fp16, eval_steps=eval_steps,
+                save_model_name=save_model_name, output_dir=output_dir)
