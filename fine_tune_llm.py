@@ -134,7 +134,7 @@ def process_dataset(data, tokenizer, block_size=512):
 if __name__ == '__main__':
     block_size = 512
     fp16 = True
-    optimizer = "ADAMW_ANYPRECISION"
+    optimizer = "adamw_anyprecision"
     per_device_train_batch_size=8
     save_eval_steps=2000
     #data_path = f"input_target_pairs_zephyr7bbetatk_toklen_{block_size}_clean_no_trunc_1target.csv"
