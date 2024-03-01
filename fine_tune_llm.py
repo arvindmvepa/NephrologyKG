@@ -134,10 +134,9 @@ def process_dataset(data, tokenizer, block_size=512):
 if __name__ == '__main__':
     block_size = 512
     fp16 = True
-    optimizer = "adamw_anyprecision"
+    optimizer = "adamw_torch_fused"
     per_device_train_batch_size=8
     save_eval_steps=2000
-    #data_path = f"input_target_pairs_zephyr7bbetatk_toklen_{block_size}_clean_no_trunc_1target.csv"
     data_path = "neph.csv"
     save_model_name = f"neph_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}"
     output_dir = f"{save_model_name}_exp"
