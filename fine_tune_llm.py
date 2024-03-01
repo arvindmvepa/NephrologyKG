@@ -19,7 +19,8 @@ from transformers import (
 )
 
 
-def train_model(model, tokenizer, data, per_device_train_batch_size=1, save_model_name="neph_model", output_dir="exp"):
+def train_model(model, tokenizer, data, optimizer="paged_adamw_32bit", fp16=True, per_device_train_batch_size=1,
+                save_model_name="neph_model", output_dir="exp"):
     tokenizer.pad_token = tokenizer.eos_token
     data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False)
     training_args = transformers.TrainingArguments(
@@ -27,7 +28,7 @@ def train_model(model, tokenizer, data, per_device_train_batch_size=1, save_mode
         gradient_accumulation_steps=4,
         num_train_epochs=3,
         learning_rate=2e-4,
-        fp16=True,
+        fp16=fp16,
         save_total_limit=4,
         logging_steps=1,
         output_dir=output_dir,
@@ -129,15 +130,18 @@ def process_dataset(data, tokenizer, block_size=512):
 
 
 if __name__ == '__main__':
-    block_size = 1024
+    block_size = 512
+    fp16 = True
+    optimizer = "ADAMW_ANYPRECISION"
+    per_device_train_batch_size=8
     #data_path = f"input_target_pairs_zephyr7bbetatk_toklen_{block_size}_clean_no_trunc_1target.csv"
     data_path = "neph.csv"
-    per_device_train_batch_size=8
-    save_model_name = f"neph1_{block_size}"
-    output_dir = f"neph1_{block_size}_exp"
+    save_model_name = f"neph_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}"
+    output_dir = f"{save_model_name}_exp"
     data = load_dataset_from_file(data_path)
     tokenizer = load_tokenizer_from_huggingface()
     processed_data = process_dataset(data, tokenizer, block_size=block_size)
     model = load_llm_from_huggingface(use_quantization=False)
-    train_model(model, tokenizer, processed_data, per_device_train_batch_size=per_device_train_batch_size,
-                save_model_name=save_model_name, output_dir=output_dir)
+    train_model(model, tokenizer, processed_data, optimizer=optimizer,
+                per_device_train_batch_size=per_device_train_batch_size, fp16=fp16, save_model_name=save_model_name,
+                output_dir=output_dir)
