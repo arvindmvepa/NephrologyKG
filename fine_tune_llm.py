@@ -19,23 +19,23 @@ from transformers import (
 )
 
 
-def train_model(model, tokenizer, data, save_model_name="neph_model"):
+def train_model(model, tokenizer, data, per_device_train_batch_size=1, save_model_name="neph_model", output_dir="exp"):
     tokenizer.pad_token = tokenizer.eos_token
     data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False)
-    OUTPUT_DIR = "experiments"
     training_args = transformers.TrainingArguments(
-        per_device_train_batch_size=8,
+        per_device_train_batch_size=per_device_train_batch_size,
         gradient_accumulation_steps=4,
         num_train_epochs=3,
         learning_rate=2e-4,
         fp16=True,
-        save_total_limit=3,
+        save_total_limit=4,
         logging_steps=1,
-        output_dir=OUTPUT_DIR,
+        output_dir=output_dir,
         evaluation_strategy="epoch",
         optim="paged_adamw_8bit",
         lr_scheduler_type="cosine",
         warmup_ratio=0.05,
+        load_best_model_at_end=True,
         report_to="tensorboard",
     )
 
@@ -132,8 +132,12 @@ if __name__ == '__main__':
     block_size = 512
     #data_path = f"input_target_pairs_zephyr7bbetatk_toklen_{block_size}_clean_no_trunc_1target.csv"
     data_path = "neph.csv"
+    per_device_train_batch_size=1
+    save_model_name = "neph1"
+    output_dir = "exp1"
     data = load_dataset_from_file(data_path)
     tokenizer = load_tokenizer_from_huggingface()
     processed_data = process_dataset(data, tokenizer, block_size=block_size)
-    model = load_llm_from_huggingface()
-    train_model(model, tokenizer, processed_data)
+    model = load_llm_from_huggingface(use_quantization=False)
+    train_model(model, tokenizer, processed_data, per_device_train_batch_size=per_device_train_batch_size,
+                save_model_name=save_model_name, output_dir=output_dir)
