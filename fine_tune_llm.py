@@ -33,7 +33,7 @@ def train_model(model, tokenizer, data, optimizer="paged_adamw_32bit", fp16=True
         logging_steps=1,
         output_dir=output_dir,
         evaluation_strategy="steps",
-        optim="paged_adamw_32bit",
+        optim=optimizer,
         lr_scheduler_type="cosine",
         warmup_ratio=0.05,
         load_best_model_at_end=True,
