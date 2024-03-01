@@ -129,12 +129,12 @@ def process_dataset(data, tokenizer, block_size=512):
 
 
 if __name__ == '__main__':
-    block_size = 512
+    block_size = 1024
     #data_path = f"input_target_pairs_zephyr7bbetatk_toklen_{block_size}_clean_no_trunc_1target.csv"
     data_path = "neph.csv"
     per_device_train_batch_size=8
-    save_model_name = "neph1"
-    output_dir = "exp1"
+    save_model_name = f"neph1_{block_size}"
+    output_dir = f"neph1_{block_size}_exp"
     data = load_dataset_from_file(data_path)
     tokenizer = load_tokenizer_from_huggingface()
     processed_data = process_dataset(data, tokenizer, block_size=block_size)
