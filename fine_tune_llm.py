@@ -132,7 +132,7 @@ if __name__ == '__main__':
     block_size = 512
     #data_path = f"input_target_pairs_zephyr7bbetatk_toklen_{block_size}_clean_no_trunc_1target.csv"
     data_path = "neph.csv"
-    per_device_train_batch_size=1
+    per_device_train_batch_size=8
     save_model_name = "neph1"
     output_dir = "exp1"
     data = load_dataset_from_file(data_path)
