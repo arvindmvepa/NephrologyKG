@@ -30,7 +30,7 @@ def eval_llm(model_name, save_file, questions=[], prompt="", pipeline_task='text
         model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto")
         tokenizer = AutoTokenizer.from_pretrained(model_name)
         tokenizer.pad_token = tokenizer.eos_token
-    generator = pipeline(pipeline_task, model=model, tokenizer=tokenizer, device=0)
+    generator = pipeline(pipeline_task, model=model, tokenizer=tokenizer, device_map="auto")
     content = []
     for question in questions:
         question = prompt + question
