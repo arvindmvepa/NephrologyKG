@@ -13,10 +13,10 @@ from peft import (
 )
 import csv
 
-pipeline_task_keys = {'text_generation': 'generated_text'}
+pipeline_task_keys = {'text-generation': 'generated_text'}
 
 
-def eval_llm(model_name, save_file, questions=[], prompt="", pipeline_task='text_generation', used_lora=True):
+def eval_llm(model_name, save_file, questions=[], prompt="", pipeline_task='text-generation', used_lora=True):
     if used_lora:
         config = PeftConfig.from_pretrained(model_name)
         model = AutoModelForCausalLM.from_pretrained(
@@ -54,7 +54,7 @@ if __name__ == '__main__':
     per_device_train_batch_size=8
     save_eval_steps=2000
     data_path = "neph.csv"
-    pipeline_task = "text_generation"
+    pipeline_task = "text-generation"
     model_name = f"neph_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}"
     tag = "_v2"
     prompt= "Extract all the entities from the ensuing paragraph. Please provide them in a list format: "
