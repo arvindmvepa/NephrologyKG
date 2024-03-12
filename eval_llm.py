@@ -13,7 +13,7 @@ from peft import (
 import csv
 
 
-def eval_llm(model_name, save_file, questions=[], prompt=""):
+def eval_llm(model_name, save_file, questions=[], prompt="", max_new_tokens=1000):
     config = PeftConfig.from_pretrained(model_name)
     model = AutoModelForCausalLM.from_pretrained(
         config.base_model_name_or_path,
@@ -25,7 +25,7 @@ def eval_llm(model_name, save_file, questions=[], prompt=""):
     content = []
     for question in questions:
         inputs = tokenizer(prompt +"\n"+ question, return_tensors="pt").to("cuda")
-        generated_ids = model.generate(**inputs, num_return_sequences=1)
+        generated_ids = model.generate(**inputs, num_return_sequences=1, max_new_tokens=max_new_tokens)
         answer = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)
         content.append((question, answer))
         print(f"question: {question}")
