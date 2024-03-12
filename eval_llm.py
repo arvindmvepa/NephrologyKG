@@ -29,7 +29,8 @@ def eval_llm(model_name, save_file, questions=[], prompt="", max_new_tokens=1000
         tokenizer.pad_token = tokenizer.eos_token
     content = []
     for question in questions:
-        inputs = tokenizer(prompt + question, return_tensors="pt").to("cuda")
+        question = prompt + question
+        inputs = tokenizer(question, return_tensors="pt").to("cuda")
         generated_ids = model.generate(**inputs, num_return_sequences=1, max_new_tokens=max_new_tokens)
         answer = tokenizer.batch_decode(generated_ids, skip_special_tokens=True, clean_up_tokenization_spaces=True)[0]
         content.append((question, answer))
