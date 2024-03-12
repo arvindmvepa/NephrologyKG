@@ -56,7 +56,7 @@ if __name__ == '__main__':
     data_path = "neph.csv"
     pipeline_task = "text_generation"
     model_name = f"neph_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}"
-    tag = "_v1"
+    tag = "_v2"
     prompt= "Extract all the entities from the ensuing paragraph. Please provide them in a list format: "
     questions = [# q1
                  "Glomerular hypertrophy may be marker of FSGS. Glomerular enlarge-\n"
