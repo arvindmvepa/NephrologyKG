@@ -29,7 +29,7 @@ def eval_llm(model_name, save_file, questions=[], prompt="", max_new_tokens=1000
         tokenizer.pad_token = tokenizer.eos_token
     content = []
     for question in questions:
-        inputs = tokenizer(prompt +"\n"+ question, return_tensors="pt").to("cuda")
+        inputs = tokenizer(prompt + question, return_tensors="pt").to("cuda")
         generated_ids = model.generate(**inputs, num_return_sequences=1, max_new_tokens=max_new_tokens)
         answer = tokenizer.batch_decode(generated_ids, skip_special_tokens=True, clean_up_tokenization_spaces=True)[0]
         content.append((question, answer))
@@ -52,9 +52,8 @@ if __name__ == '__main__':
     save_eval_steps=2000
     data_path = "neph.csv"
     model_name = f"neph_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}"
-    output_dir = f"{model_name}_exp"
-    prompt= "Extract all the entities from the ensuing paragraph. Please reproduce the paragraph but enclose all "\
-            "entities in brackets, like so: The [cat] ate some [food]. \n\n"
+    tag = "_v1"
+    prompt= "Extract all the entities from the ensuing paragraph. Please provide them in a list format: "
     questions = [# q1
                  "Glomerular hypertrophy may be marker of FSGS. Glomerular enlarge-\n"
                  "ment precedes overt glomerulosclerosis in FSGS (19). Patients with abnor-\n"
@@ -78,7 +77,7 @@ if __name__ == '__main__':
                  "public.This term includes the continuum of kidney dysfunction from mild kidney damage to\n"
                  "kidney failure, and it also includes the term, end-stage renal disease (ESRD)."
                  ]
-    eval_llm(model_name, model_name.replace('/','_') + "_entities.csv", questions=questions, prompt=prompt)
+    eval_llm(model_name, model_name.replace('/','_') + "_entities" + tag + ".csv", questions=questions, prompt=prompt)
 
 
 
