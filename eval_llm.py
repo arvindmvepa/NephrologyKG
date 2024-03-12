@@ -13,15 +13,20 @@ from peft import (
 import csv
 
 
-def eval_llm(model_name, save_file, questions=[], prompt="", max_new_tokens=1000):
-    config = PeftConfig.from_pretrained(model_name)
-    model = AutoModelForCausalLM.from_pretrained(
-        config.base_model_name_or_path,
-        device_map="auto"
-    )
-    tokenizer = AutoTokenizer.from_pretrained(config.base_model_name_or_path)
-    tokenizer.pad_token = tokenizer.eos_token
-    model = PeftModel.from_pretrained(model, model_name)
+def eval_llm(model_name, save_file, questions=[], prompt="", max_new_tokens=1000, used_lora=True):
+    if used_lora:
+        config = PeftConfig.from_pretrained(model_name)
+        model = AutoModelForCausalLM.from_pretrained(
+            config.base_model_name_or_path,
+            device_map="auto"
+        )
+        tokenizer = AutoTokenizer.from_pretrained(config.base_model_name_or_path)
+        tokenizer.pad_token = tokenizer.eos_token
+        model = PeftModel.from_pretrained(model, model_name)
+    else:
+        model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto")
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
+        tokenizer.pad_token = tokenizer.eos_token
     content = []
     for question in questions:
         inputs = tokenizer(prompt +"\n"+ question, return_tensors="pt").to("cuda")
