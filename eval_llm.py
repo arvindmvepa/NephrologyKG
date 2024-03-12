@@ -5,6 +5,7 @@ from transformers import (
     BitsAndBytesConfig,
     TrainingArguments,
     Trainer,
+    pipeline
 )
 from peft import (
     PeftConfig,
@@ -12,8 +13,10 @@ from peft import (
 )
 import csv
 
+pipeline_task_keys = {'text_generation': 'generated_text'}
 
-def eval_llm(model_name, save_file, questions=[], prompt="", max_new_tokens=1000, used_lora=True):
+
+def eval_llm(model_name, save_file, questions=[], prompt="", pipeline_task='text_generation', used_lora=True):
     if used_lora:
         config = PeftConfig.from_pretrained(model_name)
         model = AutoModelForCausalLM.from_pretrained(
@@ -27,12 +30,11 @@ def eval_llm(model_name, save_file, questions=[], prompt="", max_new_tokens=1000
         model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto")
         tokenizer = AutoTokenizer.from_pretrained(model_name)
         tokenizer.pad_token = tokenizer.eos_token
+    generator = pipeline(pipeline_task, model=model, tokenizer=tokenizer, device=0)
     content = []
     for question in questions:
         question = prompt + question
-        inputs = tokenizer(question, return_tensors="pt").to("cuda")
-        generated_ids = model.generate(**inputs, num_return_sequences=1, max_new_tokens=max_new_tokens)
-        answer = tokenizer.batch_decode(generated_ids, skip_special_tokens=True, clean_up_tokenization_spaces=True)[0]
+        answer = generator(question)[0][pipeline_task_keys[pipeline_task]]
         content.append((question, answer))
         print(f"question: {question}")
         print(f"answer: {answer}")
@@ -52,6 +54,7 @@ if __name__ == '__main__':
     per_device_train_batch_size=8
     save_eval_steps=2000
     data_path = "neph.csv"
+    pipeline_task = "text_generation"
     model_name = f"neph_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}"
     tag = "_v1"
     prompt= "Extract all the entities from the ensuing paragraph. Please provide them in a list format: "
@@ -78,7 +81,8 @@ if __name__ == '__main__':
                  "public.This term includes the continuum of kidney dysfunction from mild kidney damage to\n"
                  "kidney failure, and it also includes the term, end-stage renal disease (ESRD)."
                  ]
-    eval_llm(model_name, model_name.replace('/','_') + "_entities" + tag + ".csv", questions=questions, prompt=prompt)
+    eval_llm(model_name, model_name.replace('/','_') + f"_{pipeline_task}_entities" + tag + ".csv", questions=questions,
+             prompt=prompt)
 
 
 
