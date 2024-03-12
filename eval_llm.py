@@ -60,7 +60,9 @@ if __name__ == '__main__':
     save_eval_steps=2000
     data_path = "neph.csv"
     model_name = f"neph_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}"
+    #model_name = "HuggingFaceH4/zephyr-7b-beta"
     decoding_strat = "beam"
+    used_lora = True
     tag = "_v3"
     prompt= "Extract all the entities from the ensuing paragraph. Please provide them in a list format: "
     questions = [# q1
@@ -87,7 +89,7 @@ if __name__ == '__main__':
                  "kidney failure, and it also includes the term, end-stage renal disease (ESRD)."
                  ]
     eval_llm(model_name, model_name.replace('/','_') + f"_{decoding_strat}_entities" + tag + ".csv",
-             decoding_strat=decoding_strat, questions=questions, prompt=prompt)
+             decoding_strat=decoding_strat, questions=questions, prompt=prompt, used_lora=used_lora)
 
 
 
