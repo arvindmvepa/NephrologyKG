@@ -4,18 +4,24 @@ from transformers import (
     AutoTokenizer,
     BitsAndBytesConfig,
     TrainingArguments,
-    Trainer
+    Trainer,
+)
+from peft import (
+    PeftConfig,
+    PeftModel
 )
 import csv
-import os
 
 
 def eval_llm(model_name, save_file, questions=[], prompt=""):
+    config = PeftConfig.from_pretrained(model_name)
     model = AutoModelForCausalLM.from_pretrained(
-        model_name,
-        device_map="auto",
-        trust_remote_code=True)
-    tokenizer = AutoTokenizer.from_pretrained(model_name, padding_side="left")
+        config.base_model_name_or_path,
+        device_map="auto"
+    )
+    tokenizer = AutoTokenizer.from_pretrained(config.base_model_name_or_path)
+    tokenizer.pad_token = tokenizer.eos_token
+    model = PeftModel.from_pretrained(model, model_name)
     content = []
     for question in questions:
         inputs = tokenizer(prompt +"\n"+ question, return_tensors="pt").to("cuda")
@@ -42,7 +48,8 @@ if __name__ == '__main__':
     data_path = "neph.csv"
     model_name = f"neph_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}"
     output_dir = f"{model_name}_exp"
-    prompt= "Extract all the entities from the ensuing paragraph. Please provide them in a list format:\n"
+    prompt= "Extract all the entities from the ensuing paragraph. Please reproduce the paragraph but enclose all "\
+            "entities in brackets, like so: The [cat] ate some [food]. \n\n"
     questions = [# q1
                  "Glomerular hypertrophy may be marker of FSGS. Glomerular enlarge-\n"
                  "ment precedes overt glomerulosclerosis in FSGS (19). Patients with abnor-\n"
@@ -66,7 +73,7 @@ if __name__ == '__main__':
                  "public.This term includes the continuum of kidney dysfunction from mild kidney damage to\n"
                  "kidney failure, and it also includes the term, end-stage renal disease (ESRD)."
                  ]
-    eval_llm(model_name, os.path.join(output_dir, "entities.csv"), questions=questions, prompt=prompt)
+    eval_llm(model_name, model_name + "_entities.csv", questions=questions, prompt=prompt)
 
 
 
