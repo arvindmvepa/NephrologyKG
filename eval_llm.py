@@ -26,13 +26,13 @@ def eval_llm(model_name, save_file, questions=[], prompt="", max_new_tokens=1000
     for question in questions:
         inputs = tokenizer(prompt +"\n"+ question, return_tensors="pt").to("cuda")
         generated_ids = model.generate(**inputs, num_return_sequences=1, max_new_tokens=max_new_tokens)
-        answer = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)
-        content.append((question, answer))
+        answer = tokenizer.batch_decode(generated_ids, skip_special_tokens=True, clean_up_tokenization_spaces=True)[0]
+        content.append((question, answer.encode('utf-8')))
         print(f"question: {question}")
         print(f"answer: {answer}")
         print()
 
-    with open(save_file, mode='w', newline='') as file:
+    with open(save_file, mode='w', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
         writer.writerows(["question", "answer"])
         for line in content:
