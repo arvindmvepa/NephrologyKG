@@ -16,7 +16,8 @@ import csv
 pipeline_task_keys = {'text-generation': 'generated_text'}
 
 
-def eval_llm(model_name, save_file, questions=[], prompt="", pipeline_task='text-generation', used_lora=True):
+def eval_llm(model_name, save_file, questions=[], prompt="", pipeline_task='text-generation', max_new_tokens=1000,
+             used_lora=True):
     if used_lora:
         config = PeftConfig.from_pretrained(model_name)
         model = AutoModelForCausalLM.from_pretrained(
@@ -31,10 +32,11 @@ def eval_llm(model_name, save_file, questions=[], prompt="", pipeline_task='text
         tokenizer = AutoTokenizer.from_pretrained(model_name)
         tokenizer.pad_token = tokenizer.eos_token
     generator = pipeline(pipeline_task, model=model, tokenizer=tokenizer, device_map="auto")
+    generate_kwargs = {"max_new_tokens": max_new_tokens}
     content = []
     for question in questions:
         question = prompt + question
-        answer = generator(question)[0][pipeline_task_keys[pipeline_task]]
+        answer = generator(question, generate_kwargs=generate_kwargs)[0][pipeline_task_keys[pipeline_task]]
         content.append((question, answer))
         print(f"question: {question}")
         print(f"answer: {answer}")
