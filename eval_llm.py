@@ -34,9 +34,9 @@ def eval_llm(model_name, save_file, questions=[], prompt="", max_new_tokens=1000
 
     with open(save_file, mode='w', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
-        writer.writerows(["question", "answer"])
+        writer.writerow(["question", "answer"])
         for line in content:
-            writer.writerows(line)
+            writer.writerow(line)
 
 
 if __name__ == '__main__':
