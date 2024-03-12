@@ -78,7 +78,7 @@ if __name__ == '__main__':
                  "public.This term includes the continuum of kidney dysfunction from mild kidney damage to\n"
                  "kidney failure, and it also includes the term, end-stage renal disease (ESRD)."
                  ]
-    eval_llm(model_name, model_name + "_entities.csv", questions=questions, prompt=prompt)
+    eval_llm(model_name, model_name.replace('/','_') + "_entities.csv", questions=questions, prompt=prompt)
 
 
 
