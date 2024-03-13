@@ -128,6 +128,7 @@ def process_dataset(data, tokenizer, block_size=512, debug=False):
         num_proc=4,
         remove_columns=data["train"].column_names,
     )
+    """
     if debug:
         num_samples = len(tokenized_data['train'])
         list_keys = list(range(num_samples))
@@ -138,6 +139,7 @@ def process_dataset(data, tokenizer, block_size=512, debug=False):
             output_text = tokenizer.decode(text['input_ids'], skip_special_tokens=True,
                                            clean_up_tokenization_spaces=True)
             print(f"tokenized_data {key}: {output_text}")
+    """
     lm_dataset = tokenized_data.map(group_texts, batched=True, num_proc=4)
     if debug:
         num_samples = len(lm_dataset['train'])
@@ -145,6 +147,7 @@ def process_dataset(data, tokenizer, block_size=512, debug=False):
         sample_keys = sample(list_keys, 5)
         for key in sample_keys:
             text = lm_dataset['train'][key]
+            print(text)
             output_text = tokenizer.decode(text['input_ids'], skip_special_tokens=True,
                                            clean_up_tokenization_spaces=True)
             print(f"lm_dataset {key}: {output_text}")
