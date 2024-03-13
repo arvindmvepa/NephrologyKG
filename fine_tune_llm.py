@@ -127,7 +127,15 @@ def process_dataset(data, tokenizer, block_size=512):
         num_proc=4,
         remove_columns=data["train"].column_names,
     )
+    for i, text in enumerate(tokenized_data):
+        if i > 3:
+            break
+        print(f"tokenized_data {i}: {text}")
     lm_dataset = tokenized_data.map(group_texts, batched=True, num_proc=4)
+    for i, text in enumerate(lm_dataset):
+        if i > 3:
+            break
+        print(f"lm_dataset {i}: {text}")
     return lm_dataset
 
 
@@ -143,7 +151,7 @@ if __name__ == '__main__':
     data = load_dataset_from_file(data_path)
     tokenizer = load_tokenizer_from_huggingface()
     processed_data = process_dataset(data, tokenizer, block_size=block_size)
-    model = load_llm_from_huggingface(use_quantization=False)
-    train_model(model, tokenizer, processed_data, optimizer=optimizer,
-                per_device_train_batch_size=per_device_train_batch_size, fp16=fp16, save_eval_steps=save_eval_steps,
-                save_model_name=save_model_name, output_dir=output_dir)
+    #model = load_llm_from_huggingface(use_quantization=False)
+    #train_model(model, tokenizer, processed_data, optimizer=optimizer,
+    #            per_device_train_batch_size=per_device_train_batch_size, fp16=fp16, save_eval_steps=save_eval_steps,
+    #            save_model_name=save_model_name, output_dir=output_dir)
