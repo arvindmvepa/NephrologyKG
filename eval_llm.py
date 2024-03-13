@@ -43,6 +43,7 @@ def eval_llm(model_name, save_file, questions=[], prompt="", max_new_tokens=1000
         content.append((question, answer))
         print(f"question: {question}")
         print(f"answer: {answer}")
+        print(f"generated_ids: {generated_ids}")
         print()
 
     with open(save_file, mode='w', newline='', encoding='utf-8') as file:
