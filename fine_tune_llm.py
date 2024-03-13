@@ -127,12 +127,12 @@ def process_dataset(data, tokenizer, block_size=512):
         num_proc=4,
         remove_columns=data["train"].column_names,
     )
-    for i, text in enumerate(tokenized_data):
+    for i, text in enumerate(tokenized_data['train']):
         if i > 3:
             break
         print(f"tokenized_data {i}: {text}")
     lm_dataset = tokenized_data.map(group_texts, batched=True, num_proc=4)
-    for i, text in enumerate(lm_dataset):
+    for i, text in enumerate(lm_dataset['train']):
         if i > 3:
             break
         print(f"lm_dataset {i}: {text}")
