@@ -18,7 +18,8 @@ decoding_strats= {"greedy": {"num_beams": 1, "do_sample": False},
                   "top_k": {"do_sample": True, "top_k": 50}}
 
 
-def eval_llm(model_name, save_file, questions=[], prompt="", max_new_tokens=1000, decoding_strat="greedy", used_lora=True):
+def eval_llm(model_name, save_file, questions=[], prompt="", max_new_tokens=1000, decoding_strat="greedy",
+             used_lora=True, debug=False):
     if used_lora:
         config = PeftConfig.from_pretrained(model_name)
         model = AutoModelForCausalLM.from_pretrained(
@@ -40,15 +41,22 @@ def eval_llm(model_name, save_file, questions=[], prompt="", max_new_tokens=1000
         generated_ids = model.generate(**inputs, num_return_sequences=1, max_new_tokens=max_new_tokens, **decoding_kwargs)
         answer = tokenizer.batch_decode(generated_ids, skip_special_tokens=True, clean_up_tokenization_spaces=True)[0]
         answer = answer.split(question)[-1]
-        content.append((question, answer))
+        if debug:
+            content.append((question, answer, generated_ids))
+        else:
+            content.append((question, answer))
         print(f"question: {question}")
         print(f"answer: {answer}")
-        print(f"generated_ids: {generated_ids}")
+        if debug:
+            print(f"generated_ids: {generated_ids}")
         print()
 
     with open(save_file, mode='w', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
-        writer.writerow(["question", "answer"])
+        if debug:
+            writer.writerow(["question", "answer", "generated_ids"])
+        else:
+            writer.writerow(["question", "answer"])
         for line in content:
             writer.writerow(line)
 
