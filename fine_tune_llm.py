@@ -159,7 +159,7 @@ if __name__ == '__main__':
     per_device_train_batch_size=8
     save_eval_steps=2000
     data_path = "neph.csv"
-    num_train_epochs = 5
+    num_train_epochs = 6
     save_model_name = f"neph_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}_epochs{num_train_epochs}"
     output_dir = f"{save_model_name}_exp"
     data = load_dataset_from_file(data_path)
