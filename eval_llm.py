@@ -41,9 +41,8 @@ def eval_llm(model_name, save_file, questions=[], prompt="", max_new_tokens=1000
     for question in questions:
         question = prompt + question
         inputs = tokenizer(question, return_tensors="pt").to("cuda")
-        generated_ids = model.generate(**inputs, num_return_sequences=1, max_new_tokens=max_new_tokens, **decoding_kwargs)[0]
+        generated_ids = model.generate(**inputs, num_return_sequences=1, max_new_tokens=max_new_tokens, **decoding_kwargs)
         answer = tokenizer.batch_decode(generated_ids, skip_special_tokens=True, clean_up_tokenization_spaces=True)
-        answer = "".join(answer)
         answer = answer.split(question)[-1]
         if debug:
             content.append((question, answer, generated_ids))
@@ -72,7 +71,8 @@ if __name__ == '__main__':
     per_device_train_batch_size=8
     save_eval_steps=2000
     data_path = "neph.csv"
-    model_name = f"neph_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}"
+    num_train_epochs = 5
+    save_model_name = f"neph_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}_epochs{num_train_epochs}"
     #model_name = "HuggingFaceH4/zephyr-7b-beta"
     decoding_strat = "beam"
     used_lora = True
@@ -102,7 +102,7 @@ if __name__ == '__main__':
                  "kidney failure, and it also includes the term, end-stage renal disease (ESRD)."
                  ]
     eval_llm(model_name, model_name.replace('/','_') + f"_{decoding_strat}_entities" + tag + ".csv",
-             decoding_strat=decoding_strat, questions=questions, prompt=prompt, used_lora=used_lora, debug=True)
+             decoding_strat=decoding_strat, questions=questions, prompt=prompt, used_lora=used_lora, debug=False)
 
 
 

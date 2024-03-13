@@ -20,8 +20,8 @@ from transformers import (
 )
 
 
-def train_model(model, tokenizer, data, optimizer="paged_adamw_32bit", fp16=True, per_device_train_batch_size=1,
-                save_eval_steps=2000, save_model_name="neph_model", output_dir="exp"):
+def train_model(model, tokenizer, data, optimizer="paged_adamw_32bit", fp16=True, num_train_epochs=3,
+                per_device_train_batch_size=1, save_eval_steps=2000, save_model_name="neph_model", output_dir="exp"):
     tokenizer.pad_token = tokenizer.eos_token
     data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False)
     training_args = transformers.TrainingArguments(
@@ -128,7 +128,6 @@ def process_dataset(data, tokenizer, block_size=512, debug=False):
         num_proc=4,
         remove_columns=data["train"].column_names,
     )
-    """
     if debug:
         num_samples = len(tokenized_data['train'])
         list_keys = list(range(num_samples))
@@ -139,7 +138,6 @@ def process_dataset(data, tokenizer, block_size=512, debug=False):
             output_text = tokenizer.decode(text['input_ids'], skip_special_tokens=True,
                                            clean_up_tokenization_spaces=True)
             print(f"tokenized_data {key}: {output_text}")
-    """
     lm_dataset = tokenized_data.map(group_texts, batched=True, num_proc=4)
     if debug:
         num_samples = len(lm_dataset['train'])
@@ -161,12 +159,13 @@ if __name__ == '__main__':
     per_device_train_batch_size=8
     save_eval_steps=2000
     data_path = "neph.csv"
-    save_model_name = f"neph_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}"
+    num_train_epochs = 5
+    save_model_name = f"neph_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}_epochs{num_train_epochs}"
     output_dir = f"{save_model_name}_exp"
     data = load_dataset_from_file(data_path)
     tokenizer = load_tokenizer_from_huggingface()
-    processed_data = process_dataset(data, tokenizer, block_size=block_size, debug=True)
-    #model = load_llm_from_huggingface(use_quantization=False)
-    #train_model(model, tokenizer, processed_data, optimizer=optimizer,
-    #            per_device_train_batch_size=per_device_train_batch_size, fp16=fp16, save_eval_steps=save_eval_steps,
-    #            save_model_name=save_model_name, output_dir=output_dir)
+    processed_data = process_dataset(data, tokenizer, block_size=block_size, debug=False)
+    model = load_llm_from_huggingface(use_quantization=False)
+    train_model(model, tokenizer, processed_data, optimizer=optimizer, num_train_epochs=num_train_epochs,
+                per_device_train_batch_size=per_device_train_batch_size, fp16=fp16, save_eval_steps=save_eval_steps,
+                save_model_name=save_model_name, output_dir=output_dir)
