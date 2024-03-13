@@ -11,7 +11,10 @@ from peft import (
     PeftModel
 )
 import csv
+import torch
 
+
+torch.set_printoptions(threshold=10_000)
 decoding_strats= {"greedy": {"num_beams": 1, "do_sample": False},
                   "contrast": {"penalty_alpha": 0.6, "top_k": 4},
                   "beam": {"num_beams": 4, "do_sample": False},
@@ -98,7 +101,7 @@ if __name__ == '__main__':
                  "kidney failure, and it also includes the term, end-stage renal disease (ESRD)."
                  ]
     eval_llm(model_name, model_name.replace('/','_') + f"_{decoding_strat}_entities" + tag + ".csv",
-             decoding_strat=decoding_strat, questions=questions, prompt=prompt, used_lora=used_lora)
+             decoding_strat=decoding_strat, questions=questions, prompt=prompt, used_lora=used_lora, debug=True)
 
 
 
