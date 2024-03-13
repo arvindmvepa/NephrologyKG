@@ -2,6 +2,7 @@ import torch
 from datasets import load_dataset
 import transformers
 from transformers import DataCollatorForLanguageModeling
+from random import sample
 from peft import (
     LoraConfig,
     PeftConfig,
@@ -103,7 +104,7 @@ def load_dataset_from_file(data_path):
     data = data.train_test_split(test_size=0.2)
     return data
 
-def process_dataset(data, tokenizer, block_size=512):
+def process_dataset(data, tokenizer, block_size=512, debug=False):
     def preprocess_function(examples):
         return tokenizer([" ".join(x) for x in examples["text"]])
     def group_texts(examples):
@@ -127,19 +128,25 @@ def process_dataset(data, tokenizer, block_size=512):
         num_proc=4,
         remove_columns=data["train"].column_names,
     )
-    for i, text in enumerate(tokenized_data['train']):
-        if i > 3:
-            break
-        output_text = "".join(tokenizer.batch_decode(text['input_ids'], skip_special_tokens=True,
-                                                     clean_up_tokenization_spaces=True))
-        print(f"tokenized_data {i}: {output_text}")
+    if debug:
+        num_samples = len(tokenized_data['train'])
+        list_keys = list(range(num_samples))
+        sample_keys = sample(list_keys, 5)
+        for key in sample_keys:
+            text = tokenized_data['train'][key]
+            output_text = "".join(tokenizer.batch_decode(text['input_ids'], skip_special_tokens=True,
+                                                         clean_up_tokenization_spaces=True))
+            print(f"tokenized_data {key}: {output_text}")
     lm_dataset = tokenized_data.map(group_texts, batched=True, num_proc=4)
-    for i, text in enumerate(lm_dataset['train']):
-        if i > 3:
-            break
-        output_text = "".join(tokenizer.batch_decode(text['input_ids'], skip_special_tokens=True,
-                                                     clean_up_tokenization_spaces=True))
-        print(f"lm_dataset {i}: {output_text}")
+    if debug:
+        num_samples = len(lm_dataset['train'])
+        list_keys = list(range(num_samples))
+        sample_keys = sample(list_keys, 5)
+        for key in sample_keys:
+            text = lm_dataset['train'][key]
+            output_text = "".join(tokenizer.batch_decode(text['input_ids'], skip_special_tokens=True,
+                                                         clean_up_tokenization_spaces=True))
+            print(f"lm_dataset {key}: {output_text}")
     return lm_dataset
 
 
@@ -154,7 +161,7 @@ if __name__ == '__main__':
     output_dir = f"{save_model_name}_exp"
     data = load_dataset_from_file(data_path)
     tokenizer = load_tokenizer_from_huggingface()
-    processed_data = process_dataset(data, tokenizer, block_size=block_size)
+    processed_data = process_dataset(data, tokenizer, block_size=block_size, debug=True)
     #model = load_llm_from_huggingface(use_quantization=False)
     #train_model(model, tokenizer, processed_data, optimizer=optimizer,
     #            per_device_train_batch_size=per_device_train_batch_size, fp16=fp16, save_eval_steps=save_eval_steps,
