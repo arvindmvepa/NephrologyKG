@@ -27,7 +27,7 @@ def train_model(model, tokenizer, data, optimizer="paged_adamw_32bit", fp16=True
     training_args = transformers.TrainingArguments(
         per_device_train_batch_size=per_device_train_batch_size,
         gradient_accumulation_steps=4,
-        num_train_epochs=3,
+        num_train_epochs=num_train_epochs,
         learning_rate=2e-4,
         fp16=fp16,
         save_total_limit=4,
@@ -106,7 +106,10 @@ def load_dataset_from_file(data_path):
 
 def process_dataset(data, tokenizer, block_size=512, debug=False):
     def preprocess_function(examples):
-        return tokenizer([" ".join(x) for x in examples["text"]])
+        joined_string_lst = [" ".join(x) for x in examples["text"]]
+        print("joined_string_lst[0]: ", joined_string_lst[0])
+        print("tokenizer.decode(tokenizer.encode(joined_string_lst[0])): ", tokenizer.decode(tokenizer.encode(joined_string_lst[0])))
+        return tokenizer(joined_string_lst)
     def group_texts(examples):
         # Concatenate all texts.
         concatenated_examples = {k: sum(examples[k], []) for k in examples.keys()}
@@ -134,10 +137,10 @@ def process_dataset(data, tokenizer, block_size=512, debug=False):
         sample_keys = sample(list_keys, 5)
         for key in sample_keys:
             text = tokenized_data['train'][key]
-            print(text)
+            #print(text)
             output_text = tokenizer.decode(text['input_ids'], skip_special_tokens=True,
                                            clean_up_tokenization_spaces=True)
-            print(f"tokenized_data {key}: {output_text}")
+            #print(f"tokenized_data {key}: {output_text}")
     lm_dataset = tokenized_data.map(group_texts, batched=True, num_proc=4)
     if debug:
         num_samples = len(lm_dataset['train'])
@@ -145,10 +148,10 @@ def process_dataset(data, tokenizer, block_size=512, debug=False):
         sample_keys = sample(list_keys, 5)
         for key in sample_keys:
             text = lm_dataset['train'][key]
-            print(text)
+            #print(text)
             output_text = tokenizer.decode(text['input_ids'], skip_special_tokens=True,
                                            clean_up_tokenization_spaces=True)
-            print(f"lm_dataset {key}: {output_text}")
+            #print(f"lm_dataset {key}: {output_text}")
     return lm_dataset
 
 
@@ -158,14 +161,14 @@ if __name__ == '__main__':
     optimizer = "adamw_torch_fused"
     per_device_train_batch_size=8
     save_eval_steps=2000
-    data_path = "neph.csv"
+    data_path = "neph_v2.csv"
     num_train_epochs = 6
     save_model_name = f"neph_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}_epochs{num_train_epochs}"
     output_dir = f"{save_model_name}_exp"
     data = load_dataset_from_file(data_path)
     tokenizer = load_tokenizer_from_huggingface()
-    processed_data = process_dataset(data, tokenizer, block_size=block_size, debug=False)
-    model = load_llm_from_huggingface(use_quantization=False)
-    train_model(model, tokenizer, processed_data, optimizer=optimizer, num_train_epochs=num_train_epochs,
-                per_device_train_batch_size=per_device_train_batch_size, fp16=fp16, save_eval_steps=save_eval_steps,
-                save_model_name=save_model_name, output_dir=output_dir)
+    processed_data = process_dataset(data, tokenizer, block_size=block_size, debug=True)
+    #model = load_llm_from_huggingface(use_quantization=False)
+    #train_model(model, tokenizer, processed_data, optimizer=optimizer, num_train_epochs=num_train_epochs,
+    #           per_device_train_batch_size=per_device_train_batch_size, fp16=fp16, save_eval_steps=save_eval_steps,
+    #            save_model_name=save_model_name, output_dir=output_dir)

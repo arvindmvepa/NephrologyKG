@@ -1,10 +1,10 @@
 import os
 import pandas as pd
-from transformers import AutoTokenizer
+#from transformers import AutoTokenizer
 from tqdm import tqdm
 
 tokenizer_name="HuggingFaceH4/zephyr-7b-beta"
-tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
+#tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
 
 
 def clean_text(text):
@@ -70,8 +70,8 @@ def standard_save_to_csv(directory, output_csv_path, clean=True):
 
 if __name__ == '__main__':
     chunk_size = 512
-    directory = "textbook_txt_files"
+    directory = r"/Users/arvin/Documents/ucla research/nephrology nlp/textbook_txt_files_v2"
     #output_csv_path = f"input_target_pairs_zephyr7bbetatk_toklen_{chunk_size}_clean_no_trunc_1target.csv"
     #prepare_data_and_save_to_csv(directory, output_csv_path, chunk_size=512)
-    output_csv_path = f"neph.csv"
+    output_csv_path = f"neph_v2.csv"
     standard_save_to_csv(directory, output_csv_path)
