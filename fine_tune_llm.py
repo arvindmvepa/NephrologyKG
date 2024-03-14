@@ -106,9 +106,6 @@ def load_dataset_from_file(data_path):
 
 def process_dataset(data, tokenizer, block_size=512, debug=False):
     def preprocess_function(examples):
-        print("examples[text][0]: ", examples["text"][0])
-        #print("joined_string_lst[0]: ", joined_string_lst[0])
-        print("tokenizer.decode(tokenizer.encode(examples[text][0])): ", tokenizer.decode(tokenizer.encode(examples["text"][0])))
         return tokenizer(examples["text"])
     def group_texts(examples):
         # Concatenate all texts.
@@ -137,10 +134,10 @@ def process_dataset(data, tokenizer, block_size=512, debug=False):
         sample_keys = sample(list_keys, 5)
         for key in sample_keys:
             text = tokenized_data['train'][key]
-            #print(text)
+            print(text)
             output_text = tokenizer.decode(text['input_ids'], skip_special_tokens=True,
                                            clean_up_tokenization_spaces=True)
-            #print(f"tokenized_data {key}: {output_text}")
+            print(f"tokenized_data {key}: {output_text}")
     lm_dataset = tokenized_data.map(group_texts, batched=True, num_proc=4)
     if debug:
         num_samples = len(lm_dataset['train'])
@@ -148,10 +145,10 @@ def process_dataset(data, tokenizer, block_size=512, debug=False):
         sample_keys = sample(list_keys, 5)
         for key in sample_keys:
             text = lm_dataset['train'][key]
-            #print(text)
+            print(text)
             output_text = tokenizer.decode(text['input_ids'], skip_special_tokens=True,
                                            clean_up_tokenization_spaces=True)
-            #print(f"lm_dataset {key}: {output_text}")
+            print(f"lm_dataset {key}: {output_text}")
     return lm_dataset
 
 
