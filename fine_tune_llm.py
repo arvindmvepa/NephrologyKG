@@ -107,6 +107,7 @@ def load_dataset_from_file(data_path):
 def process_dataset(data, tokenizer, block_size=512, debug=False):
     def preprocess_function(examples):
         joined_string_lst = [" ".join(x) for x in examples["text"]]
+        print("examples[text][0]: ", examples["text"][0])
         print("joined_string_lst[0]: ", joined_string_lst[0])
         print("tokenizer.decode(tokenizer.encode(joined_string_lst[0])): ", tokenizer.decode(tokenizer.encode(joined_string_lst[0])))
         return tokenizer(joined_string_lst)
