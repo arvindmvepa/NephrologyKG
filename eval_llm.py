@@ -69,14 +69,14 @@ if __name__ == '__main__':
     fp16 = True
     optimizer = "adamw_torch_fused"
     per_device_train_batch_size=8
-    save_eval_steps=2000
+    save_eval_steps=1000
     data_path = "neph.csv"
-    num_train_epochs = 5
-    save_model_name = f"neph_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}_epochs{num_train_epochs}"
+    num_train_epochs = 10
+    model_name = f"neph_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}_epochs{num_train_epochs}_v2"
     #model_name = "HuggingFaceH4/zephyr-7b-beta"
     decoding_strat = "beam"
     used_lora = True
-    tag = "_v3"
+    tag = "_v4"
     prompt= "Extract all the entities from the ensuing paragraph. Please provide them in a list format: "
     questions = [# q1
                  "Glomerular hypertrophy may be marker of FSGS. Glomerular enlarge-\n"
