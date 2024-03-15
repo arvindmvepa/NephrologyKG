@@ -42,7 +42,7 @@ def eval_llm(model_name, save_file, questions=[], prompt="", max_new_tokens=1000
         question = prompt + question
         inputs = tokenizer(question, return_tensors="pt").to("cuda")
         generated_ids = model.generate(**inputs, num_return_sequences=1, max_new_tokens=max_new_tokens, **decoding_kwargs)
-        answer = tokenizer.batch_decode(generated_ids, skip_special_tokens=True, clean_up_tokenization_spaces=True)
+        answer = tokenizer.batch_decode(generated_ids, skip_special_tokens=True, clean_up_tokenization_spaces=True)[0]
         answer = answer.split(question)[-1]
         if debug:
             content.append((question, answer, generated_ids))
