@@ -165,21 +165,27 @@ def process_dataset(data, tokenizer, block_size=512, debug=False, debug_file="da
 
 
 if __name__ == '__main__':
-    block_size = 512
+    block_size = 128
     fp16 = True
     optimizer = "adamw_torch_fused"
     per_device_train_batch_size=8
     save_eval_steps=1000
-    old = True
+    old = False
+    new = True
     if old:
         data_path = "neph.csv"
         debug_file = "dataset_debug.csv"
         tag = "v1"
     else:
-        data_path = "neph_v2.csv"
-        debug_file = "dataset_debug_v2.csv"
-        tag = "v2"
-    num_train_epochs = 5
+        if new:
+            data_path = "neph_v3.csv"
+            debug_file = "dataset_debug_v3.csv"
+            tag = "v3"
+        else:
+            data_path = "neph_v2.csv"
+            debug_file = "dataset_debug_v2.csv"
+            tag = "v2"
+    num_train_epochs = 10
     debug=False
     save_model_name = f"neph_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}_epochs{num_train_epochs}_{tag}"
     output_dir = f"{save_model_name}_exp"
