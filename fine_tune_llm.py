@@ -99,10 +99,10 @@ def load_llm_from_huggingface(model_name="HuggingFaceH4/zephyr-7b-beta", use_qua
     return model
 
 
-def load_dataset_from_file(data_path):
+def load_dataset_from_file(data_path, seed=None):
     data = load_dataset("csv", data_files=data_path)
     data = data['train']
-    data = data.train_test_split(test_size=0.2)
+    data = data.train_test_split(test_size=0.2, seed=seed)
     return data
 
 def process_dataset(data, tokenizer, block_size=512, debug=False, debug_file="dataset_debug.csv", old=False):
@@ -186,10 +186,11 @@ if __name__ == '__main__':
             debug_file = "dataset_debug_v2.csv"
             tag = "v2"
     num_train_epochs = 10
+    seed=0
     debug=False
-    save_model_name = f"neph_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}_epochs{num_train_epochs}_{tag}"
+    save_model_name = f"neph_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}_epochs{num_train_epochs}_seed{seed}_{tag}"
     output_dir = f"{save_model_name}_exp"
-    data = load_dataset_from_file(data_path)
+    data = load_dataset_from_file(data_path, seed=seed)
     tokenizer = load_tokenizer_from_huggingface()
     processed_data = process_dataset(data, tokenizer, block_size=block_size, debug=debug, old=old, debug_file=debug_file)
     model = load_llm_from_huggingface(use_quantization=False)
