@@ -174,17 +174,19 @@ if __name__ == '__main__':
     if old:
         data_path = "neph.csv"
         debug_file = "dataset_debug.csv"
+        tag = "v1"
     else:
         data_path = "neph_v2.csv"
         debug_file = "dataset_debug_v2.csv"
-    num_train_epochs = 10
-    debug=True
-    save_model_name = f"neph_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}_epochs{num_train_epochs}_v2"
+        tag = "v2"
+    num_train_epochs = 5
+    debug=False
+    save_model_name = f"neph_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}_epochs{num_train_epochs}_{tag}"
     output_dir = f"{save_model_name}_exp"
     data = load_dataset_from_file(data_path)
     tokenizer = load_tokenizer_from_huggingface()
     processed_data = process_dataset(data, tokenizer, block_size=block_size, debug=debug, old=old, debug_file=debug_file)
-    #model = load_llm_from_huggingface(use_quantization=False)
-    #train_model(model, tokenizer, processed_data, optimizer=optimizer, num_train_epochs=num_train_epochs,
-    #           per_device_train_batch_size=per_device_train_batch_size, fp16=fp16, save_eval_steps=save_eval_steps,
-    #            save_model_name=save_model_name, output_dir=output_dir)
+    model = load_llm_from_huggingface(use_quantization=False)
+    train_model(model, tokenizer, processed_data, optimizer=optimizer, num_train_epochs=num_train_epochs,
+                per_device_train_batch_size=per_device_train_batch_size, fp16=fp16, save_eval_steps=save_eval_steps,
+                save_model_name=save_model_name, output_dir=output_dir)
