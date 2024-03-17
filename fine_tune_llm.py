@@ -18,6 +18,7 @@ from transformers import (
     TrainingArguments,
     Trainer
 )
+import csv
 
 
 def train_model(model, tokenizer, data, optimizer="paged_adamw_32bit", fp16=True, num_train_epochs=3,
@@ -104,7 +105,7 @@ def load_dataset_from_file(data_path):
     data = data.train_test_split(test_size=0.2)
     return data
 
-def process_dataset(data, tokenizer, block_size=512, debug=False):
+def process_dataset(data, tokenizer, block_size=512, debug=False, debug_file="dataset_debug.csv"):
     def preprocess_function(examples):
         return tokenizer(examples["text"])
     def group_texts(examples):
@@ -138,6 +139,7 @@ def process_dataset(data, tokenizer, block_size=512, debug=False):
             output_text = tokenizer.decode(text['input_ids'], skip_special_tokens=True,
                                            clean_up_tokenization_spaces=True)
             print(f"tokenized_data {key}: {output_text}")
+
     lm_dataset = tokenized_data.map(group_texts, batched=True, num_proc=4)
     if debug:
         num_samples = len(lm_dataset['train'])
@@ -149,6 +151,14 @@ def process_dataset(data, tokenizer, block_size=512, debug=False):
             output_text = tokenizer.decode(text['input_ids'], skip_special_tokens=True,
                                            clean_up_tokenization_spaces=True)
             print(f"lm_dataset {key}: {output_text}")
+        with open(debug_file, 'w', newline='') as f:
+            csvwriter = csv.writer(f)
+            csvwriter.writerow(['id', 'inputs', 'outputs'])
+            for key in list_keys:
+                text = lm_dataset['train'][key]
+                input = tokenizer.decode(text['input_ids'], skip_special_tokens=True, clean_up_tokenization_spaces=True)
+                output = tokenizer.decode(text['labels'], skip_special_tokens=True, clean_up_tokenization_spaces=True)
+                csvwriter.writerow([key, input, output])
     return lm_dataset
 
 
@@ -165,7 +175,7 @@ if __name__ == '__main__':
     data = load_dataset_from_file(data_path)
     tokenizer = load_tokenizer_from_huggingface()
     processed_data = process_dataset(data, tokenizer, block_size=block_size, debug=False)
-    model = load_llm_from_huggingface(use_quantization=False)
-    train_model(model, tokenizer, processed_data, optimizer=optimizer, num_train_epochs=num_train_epochs,
-               per_device_train_batch_size=per_device_train_batch_size, fp16=fp16, save_eval_steps=save_eval_steps,
-                save_model_name=save_model_name, output_dir=output_dir)
+    #model = load_llm_from_huggingface(use_quantization=False)
+    #train_model(model, tokenizer, processed_data, optimizer=optimizer, num_train_epochs=num_train_epochs,
+    #           per_device_train_batch_size=per_device_train_batch_size, fp16=fp16, save_eval_steps=save_eval_steps,
+    #            save_model_name=save_model_name, output_dir=output_dir)
