@@ -105,8 +105,10 @@ def load_dataset_from_file(data_path):
     data = data.train_test_split(test_size=0.2)
     return data
 
-def process_dataset(data, tokenizer, block_size=512, debug=False, debug_file="dataset_debug.csv"):
+def process_dataset(data, tokenizer, block_size=512, debug=False, debug_file="dataset_debug.csv", old=False):
     def preprocess_function(examples):
+        if old:
+            return tokenizer([" ".join(x) for x in examples["text"]])
         return tokenizer(examples["text"])
     def group_texts(examples):
         # Concatenate all texts.
@@ -168,14 +170,20 @@ if __name__ == '__main__':
     optimizer = "adamw_torch_fused"
     per_device_train_batch_size=8
     save_eval_steps=1000
-    data_path = "neph_v2.csv"
+    old = True
+    if old:
+        data_path = "neph.csv"
+        debug_file = "dataset_debug.csv"
+    else:
+        data_path = "neph_v2.csv"
+        debug_file = "dataset_debug_v2.csv"
     num_train_epochs = 10
     debug=True
     save_model_name = f"neph_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}_epochs{num_train_epochs}_v2"
     output_dir = f"{save_model_name}_exp"
     data = load_dataset_from_file(data_path)
     tokenizer = load_tokenizer_from_huggingface()
-    processed_data = process_dataset(data, tokenizer, block_size=block_size, debug=debug)
+    processed_data = process_dataset(data, tokenizer, block_size=block_size, debug=debug, old=old, debug_file=debug_file)
     #model = load_llm_from_huggingface(use_quantization=False)
     #train_model(model, tokenizer, processed_data, optimizer=optimizer, num_train_epochs=num_train_epochs,
     #           per_device_train_batch_size=per_device_train_batch_size, fp16=fp16, save_eval_steps=save_eval_steps,
