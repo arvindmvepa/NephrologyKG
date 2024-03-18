@@ -165,7 +165,7 @@ def process_dataset(data, tokenizer, block_size=512, debug=False, debug_file="da
 
 
 if __name__ == '__main__':
-    block_size = 128
+    block_size = 256
     fp16 = True
     optimizer = "adamw_torch_fused"
     per_device_train_batch_size=8
