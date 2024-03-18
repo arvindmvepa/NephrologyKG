@@ -21,7 +21,7 @@ from transformers import (
 import csv
 
 
-def train_model(model, tokenizer, data, optimizer="paged_adamw_32bit", fp16=True, num_train_epochs=3,
+def train_model(model, tokenizer, data, optimizer="paged_adamw_32bit", fp16=True, num_train_epochs=3, warmup_ratio=0.05,
                 per_device_train_batch_size=1, save_eval_steps=2000, save_model_name="neph_model", output_dir="exp"):
     tokenizer.pad_token = tokenizer.eos_token
     data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False)
@@ -39,7 +39,7 @@ def train_model(model, tokenizer, data, optimizer="paged_adamw_32bit", fp16=True
         save_steps=save_eval_steps,
         optim=optimizer,
         lr_scheduler_type="cosine",
-        warmup_ratio=0.05,
+        warmup_ratio=warmup_ratio,
         load_best_model_at_end=True,
         report_to="tensorboard",
     )
@@ -186,14 +186,15 @@ if __name__ == '__main__':
             debug_file = "dataset_debug_v2.csv"
             tag = "v2"
     num_train_epochs = 10
+    warmup_ratio = 0.0
     seed=0
     debug=False
-    save_model_name = f"neph_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}_epochs{num_train_epochs}_seed{seed}_{tag}"
+    save_model_name = f"neph_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}_epochs{num_train_epochs}_wr{warmup_ratio}_seed{seed}_{tag}"
     output_dir = f"{save_model_name}_exp"
     data = load_dataset_from_file(data_path, seed=seed)
     tokenizer = load_tokenizer_from_huggingface()
     processed_data = process_dataset(data, tokenizer, block_size=block_size, debug=debug, old=old, debug_file=debug_file)
     model = load_llm_from_huggingface(use_quantization=False)
     train_model(model, tokenizer, processed_data, optimizer=optimizer, num_train_epochs=num_train_epochs,
-                per_device_train_batch_size=per_device_train_batch_size, fp16=fp16, save_eval_steps=save_eval_steps,
-                save_model_name=save_model_name, output_dir=output_dir)
+                warmup_ratio=warmup_ratio, per_device_train_batch_size=per_device_train_batch_size, fp16=fp16,
+                save_eval_steps=save_eval_steps, save_model_name=save_model_name, output_dir=output_dir)
