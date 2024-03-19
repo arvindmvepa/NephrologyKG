@@ -217,7 +217,7 @@ if __name__ == '__main__':
         tokenizer_name = model_name
     output_dir = f"{save_model_name}_exp"
     data = load_dataset_from_file(data_path, seed=seed)
-    tokenizer = load_tokenizer_from_huggingface(model_name)
+    tokenizer = load_tokenizer_from_huggingface(tokenizer_name)
     processed_data = process_dataset(data, tokenizer, block_size=block_size, debug=debug, old=old, debug_file=debug_file)
     model = load_llm_from_huggingface(model_name, use_quantization=False)
     train_model(model, tokenizer, processed_data, optimizer=optimizer, num_train_epochs=num_train_epochs,
