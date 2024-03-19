@@ -16,7 +16,9 @@ from transformers import (
     AutoTokenizer,
     BitsAndBytesConfig,
     TrainingArguments,
-    Trainer
+    Trainer,
+    LlamaForCausalLM,
+    LlamaTokenizer
 )
 import csv
 
@@ -57,7 +59,10 @@ def train_model(model, tokenizer, data, optimizer="paged_adamw_32bit", fp16=True
 
 
 def load_tokenizer_from_huggingface(tokenizer_name="HuggingFaceH4/zephyr-7b-beta"):
-    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
+    if "llama" in tokenizer_name:
+        tokenizer = LlamaTokenizer.from_pretrained(tokenizer_name)
+    else:
+        tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
     tokenizer.pad_token = tokenizer.eos_token
     return tokenizer
 
@@ -71,16 +76,29 @@ def load_llm_from_huggingface(model_name="HuggingFaceH4/zephyr-7b-beta", use_qua
             bnb_4bit_use_double_quant=True,
             bnb_4bit_quant_type="nf4",
             bnb_4bit_compute_dtype=torch.bfloat16)
-        model = AutoModelForCausalLM.from_pretrained(
-            model_name,
-            device_map="auto",
-            trust_remote_code=True,
-            quantization_config=bnb_config)
+        if "llama" in model_name:
+            model = LlamaForCausalLM.from_pretrained(
+                model_name,
+                device_map="auto",
+                trust_remote_code=True,
+                quantization_config=bnb_config)
+        else:
+            model = AutoModelForCausalLM.from_pretrained(
+                model_name,
+                device_map="auto",
+                trust_remote_code=True,
+                quantization_config=bnb_config)
     else:
-        model = AutoModelForCausalLM.from_pretrained(
-            model_name,
-            device_map="auto",
-            trust_remote_code=True)
+        if "llama" in model_name:
+            model = LlamaForCausalLM.from_pretrained(
+                model_name,
+                device_map="auto",
+                trust_remote_code=True)
+        else:
+            model = AutoModelForCausalLM.from_pretrained(
+                model_name,
+                device_map="auto",
+                trust_remote_code=True)
 
     model.gradient_checkpointing_enable()
     model = prepare_model_for_kbit_training(model)
@@ -185,16 +203,20 @@ if __name__ == '__main__':
             data_path = "neph_v2.csv"
             debug_file = "dataset_debug_v2.csv"
             tag = "v2"
+    model_name = r"/home/amvepa91/llama/llama-2-7b"
     num_train_epochs = 10
-    warmup_ratio = 0.0
+    warmup_ratio = 0.05
     seed=0
     debug=False
-    save_model_name = f"neph_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}_epochs{num_train_epochs}_wr{warmup_ratio}_seed{seed}_{tag}"
+    if "llama" in model_name:
+        save_model_name = f"neph_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}_epochs{num_train_epochs}_wr{warmup_ratio}_seed{seed}_{tag}"
+    else:
+        save_model_name = f"neph_llama2_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}_epochs{num_train_epochs}_wr{warmup_ratio}_seed{seed}_{tag}"
     output_dir = f"{save_model_name}_exp"
     data = load_dataset_from_file(data_path, seed=seed)
-    tokenizer = load_tokenizer_from_huggingface()
+    tokenizer = load_tokenizer_from_huggingface(model_name)
     processed_data = process_dataset(data, tokenizer, block_size=block_size, debug=debug, old=old, debug_file=debug_file)
-    model = load_llm_from_huggingface(use_quantization=False)
+    model = load_llm_from_huggingface(model_name, use_quantization=False)
     train_model(model, tokenizer, processed_data, optimizer=optimizer, num_train_epochs=num_train_epochs,
                 warmup_ratio=warmup_ratio, per_device_train_batch_size=per_device_train_batch_size, fp16=fp16,
                 save_eval_steps=save_eval_steps, save_model_name=save_model_name, output_dir=output_dir)
