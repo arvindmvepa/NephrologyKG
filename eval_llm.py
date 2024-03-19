@@ -15,9 +15,7 @@ from peft import (
 import csv
 import torch
 import os
-
-llm_dict = {"llama": {"model": LlamaForCausalLM, "tokenizer": LlamaTokenizer},
-            "default": {"model": AutoModelForCausalLM, "tokenizer": AutoTokenizer}}
+from llm_params import llm_dict
 
 
 torch.set_printoptions(threshold=10_000)

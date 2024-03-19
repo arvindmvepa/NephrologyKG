@@ -3,7 +3,7 @@ from datasets import load_dataset
 import transformers
 from transformers import DataCollatorForLanguageModeling
 from random import sample
-import os
+from llm_params import llm_dict
 from peft import (
     LoraConfig,
     PeftConfig,
@@ -61,9 +61,10 @@ def train_model(model, tokenizer, data, optimizer="paged_adamw_32bit", fp16=True
 
 def load_tokenizer_from_huggingface(tokenizer_name="HuggingFaceH4/zephyr-7b-beta"):
     if "llama" in tokenizer_name:
-        tokenizer = LlamaTokenizer.from_pretrained(tokenizer_name)
+        tokenizer_cls = llm_dict['llama']['tokenizer']
     else:
-        tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
+        tokenizer_cls = llm_dict['default']['tokenizer']
+    tokenizer = tokenizer_cls.from_pretrained(tokenizer_name)
     tokenizer.pad_token = tokenizer.eos_token
     return tokenizer
 
@@ -71,36 +72,26 @@ def load_tokenizer_from_huggingface(tokenizer_name="HuggingFaceH4/zephyr-7b-beta
 def load_llm_from_huggingface(model_name="HuggingFaceH4/zephyr-7b-beta", use_quantization=False, r=16, lora_alpha=32,
                               target_modules=("q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"),
                               lora_dropout=0.1, bias="none", task_type="CAUSAL_LM"):
+    if "llama" in model_name:
+        model_cls = llm_dict['llama']['model']
+    else:
+        model_cls = llm_dict['default']['model']
     if use_quantization:
         bnb_config = BitsAndBytesConfig(
             load_in_4bit=True,
             bnb_4bit_use_double_quant=True,
             bnb_4bit_quant_type="nf4",
             bnb_4bit_compute_dtype=torch.bfloat16)
-        if "llama" in model_name:
-            model = LlamaForCausalLM.from_pretrained(
-                model_name,
-                device_map="auto",
-                trust_remote_code=True,
-                quantization_config=bnb_config)
-        else:
-            model = AutoModelForCausalLM.from_pretrained(
-                model_name,
-                device_map="auto",
-                trust_remote_code=True,
-                quantization_config=bnb_config)
+        model = model_cls.from_pretrained(
+            model_name,
+            device_map="auto",
+            trust_remote_code=True,
+            quantization_config=bnb_config)
     else:
-        if "llama" in model_name:
-            model = LlamaForCausalLM.from_pretrained(
-                model_name,
-                device_map="auto",
-                trust_remote_code=True)
-        else:
-            model = AutoModelForCausalLM.from_pretrained(
-                model_name,
-                device_map="auto",
-                trust_remote_code=True)
-
+        model = model_cls.from_pretrained(
+            model_name,
+            device_map="auto",
+            trust_remote_code=True)
     model.gradient_checkpointing_enable()
     model = prepare_model_for_kbit_training(model)
     print(model)
