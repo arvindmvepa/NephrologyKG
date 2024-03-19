@@ -210,9 +210,9 @@ if __name__ == '__main__':
     seed=0
     debug=False
     if "llama" in model_name:
-        save_model_name = f"neph_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}_epochs{num_train_epochs}_wr{warmup_ratio}_seed{seed}_{tag}"
-    else:
         save_model_name = f"neph_llama2_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}_epochs{num_train_epochs}_wr{warmup_ratio}_seed{seed}_{tag}"
+    else:
+        save_model_name = f"neph_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}_epochs{num_train_epochs}_wr{warmup_ratio}_seed{seed}_{tag}"
     output_dir = f"{save_model_name}_exp"
     data = load_dataset_from_file(data_path, seed=seed)
     tokenizer = load_tokenizer_from_huggingface(model_name)
