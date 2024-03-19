@@ -22,8 +22,10 @@ decoding_strats= {"greedy": {"num_beams": 1, "do_sample": False},
                   "top_k": {"do_sample": True, "top_k": 50}}
 
 
-def eval_llm(model_name, save_file, questions=[], prompt="", max_new_tokens=1000, decoding_strat="greedy",
+def eval_llm(model_name, checkpoint, save_file, questions=[], prompt="", max_new_tokens=1000, decoding_strat="greedy",
              used_lora=True, debug=False):
+    if checkpoint:
+        model_name = os.path.join(model_name + "_exp", checkpoint)
     if used_lora:
         config = PeftConfig.from_pretrained(model_name)
         model = AutoModelForCausalLM.from_pretrained(
@@ -94,8 +96,6 @@ if __name__ == '__main__':
     #model_name = f"neph_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}_epochs{num_train_epochs}_wr{warmup_ratio}_seed{seed}_{tag}"
     #model_name = "HuggingFaceH4/zephyr-7b-beta"
     checkpoint = f"checkpoint-5000"
-    if checkpoint:
-        model_name = os.path.join(model_name, checkpoint)
     decoding_strat = "greedy"
     used_lora = True
     tag = "_v5"
@@ -123,7 +123,7 @@ if __name__ == '__main__':
                  "public.This term includes the continuum of kidney dysfunction from mild kidney damage to\n"
                  "kidney failure, and it also includes the term, end-stage renal disease (ESRD)."
                  ]
-    eval_llm(model_name, model_name.replace('/','_') + f"_{decoding_strat}_entities" + tag + ".csv",
+    eval_llm(model_name, checkpoint, model_name.replace('/','_') + f"_{decoding_strat}_entities" + tag + ".csv",
              decoding_strat=decoding_strat, questions=questions, prompt=prompt, used_lora=used_lora, debug=False)
 
 
