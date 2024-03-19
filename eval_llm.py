@@ -12,6 +12,7 @@ from peft import (
 )
 import csv
 import torch
+import os
 
 
 torch.set_printoptions(threshold=10_000)
@@ -65,18 +66,39 @@ def eval_llm(model_name, save_file, questions=[], prompt="", max_new_tokens=1000
 
 
 if __name__ == '__main__':
-    block_size = 512
+    block_size = 256
     fp16 = True
     optimizer = "adamw_torch_fused"
     per_device_train_batch_size=8
     save_eval_steps=1000
-    data_path = "neph.csv"
+    old = False
+    new = True
+    if old:
+        data_path = "neph.csv"
+        debug_file = "dataset_debug.csv"
+        model_tag = "v1"
+    else:
+        if new:
+            data_path = "neph_v3.csv"
+            debug_file = "dataset_debug_v3.csv"
+            model_tag = "v3"
+        else:
+            data_path = "neph_v2.csv"
+            debug_file = "dataset_debug_v2.csv"
+            model_tag = "v2"
     num_train_epochs = 10
-    model_name = f"neph_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}_epochs{num_train_epochs}_v2"
+    warmup_ratio = 0.0
+    seed=0
+    debug=False
+    model_name = f"neph_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}_epochs{num_train_epochs}_seed{seed}_{model_tag}"
+    #model_name = f"neph_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}_epochs{num_train_epochs}_wr{warmup_ratio}_seed{seed}_{tag}"
     #model_name = "HuggingFaceH4/zephyr-7b-beta"
-    decoding_strat = "beam"
+    checkpoint = f"checkpoint-5000"
+    if checkpoint:
+        model_name = os.path.join(model_name, checkpoint)
+    decoding_strat = "greedy"
     used_lora = True
-    tag = "_v4"
+    tag = "_v5"
     prompt= "Extract all the entities from the ensuing paragraph. Please provide them in a list format: "
     questions = [# q1
                  "Glomerular hypertrophy may be marker of FSGS. Glomerular enlarge-\n"
