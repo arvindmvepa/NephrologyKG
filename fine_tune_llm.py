@@ -204,20 +204,18 @@ if __name__ == '__main__':
             data_path = "neph_v2.csv"
             debug_file = "dataset_debug_v2.csv"
             tag = "v2"
-    model_name = r"/home/amvepa91/llama/llama-2-7b"
+    model_name = r"/home/amvepa91/llama/llama-2-7b-hf"
     num_train_epochs = 10
     warmup_ratio = 0.05
     seed=0
     debug=False
     if "llama" in model_name:
         save_model_name = f"neph_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}_epochs{num_train_epochs}_wr{warmup_ratio}_seed{seed}_{tag}"
-        tokenizer_name = os.path.dirname(model_name)
     else:
         save_model_name = f"neph_llama2_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}_epochs{num_train_epochs}_wr{warmup_ratio}_seed{seed}_{tag}"
-        tokenizer_name = model_name
     output_dir = f"{save_model_name}_exp"
     data = load_dataset_from_file(data_path, seed=seed)
-    tokenizer = load_tokenizer_from_huggingface(tokenizer_name)
+    tokenizer = load_tokenizer_from_huggingface(model_name)
     processed_data = process_dataset(data, tokenizer, block_size=block_size, debug=debug, old=old, debug_file=debug_file)
     model = load_llm_from_huggingface(model_name, use_quantization=False)
     train_model(model, tokenizer, processed_data, optimizer=optimizer, num_train_epochs=num_train_epochs,
