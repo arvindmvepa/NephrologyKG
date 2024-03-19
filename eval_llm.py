@@ -5,6 +5,8 @@ from transformers import (
     BitsAndBytesConfig,
     TrainingArguments,
     Trainer,
+    LlamaForCausalLM,
+    LlamaTokenizer
 )
 from peft import (
     PeftConfig,
@@ -13,6 +15,9 @@ from peft import (
 import csv
 import torch
 import os
+
+llm_dict = {"llama": {"model": LlamaForCausalLM, "tokenizer": LlamaTokenizer},
+            "default": {"model": AutoModelForCausalLM, "tokenizer": AutoTokenizer}}
 
 
 torch.set_printoptions(threshold=10_000)
@@ -26,18 +31,24 @@ def eval_llm(model_name, checkpoint, save_file, questions=[], prompt="", max_new
              used_lora=True, debug=False):
     if checkpoint:
         model_name = os.path.join(model_name + "_exp", checkpoint)
+    if "llama" in model_name:
+        model_cls = llm_dict["llama"]["model"]
+        tokenizer_cls = llm_dict["llama"]["tokenizer"]
+    else:
+        model_cls = llm_dict["default"]["model"]
+        tokenizer_cls = llm_dict["default"]["tokenizer"]
     if used_lora:
         config = PeftConfig.from_pretrained(model_name)
-        model = AutoModelForCausalLM.from_pretrained(
+        model = model_cls.from_pretrained(
             config.base_model_name_or_path,
             device_map="auto"
         )
-        tokenizer = AutoTokenizer.from_pretrained(config.base_model_name_or_path)
+        tokenizer = tokenizer_cls.from_pretrained(config.base_model_name_or_path)
         tokenizer.pad_token = tokenizer.eos_token
         model = PeftModel.from_pretrained(model, model_name)
     else:
-        model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto")
-        tokenizer = AutoTokenizer.from_pretrained(model_name)
+        model = model_cls.from_pretrained(model_name, device_map="auto")
+        tokenizer = tokenizer_cls.from_pretrained(model_name)
         tokenizer.pad_token = tokenizer.eos_token
     decoding_kwargs = decoding_strats[decoding_strat]
     content = []
@@ -78,24 +89,28 @@ if __name__ == '__main__':
     if old:
         data_path = "neph.csv"
         debug_file = "dataset_debug.csv"
-        model_tag = "v1"
+        tag = "v1"
     else:
         if new:
             data_path = "neph_v3.csv"
             debug_file = "dataset_debug_v3.csv"
-            model_tag = "v3"
+            tag = "v3"
         else:
             data_path = "neph_v2.csv"
             debug_file = "dataset_debug_v2.csv"
-            model_tag = "v2"
+            tag = "v2"
+    load_model_name = r"/home/amvepa91/llama/llama-2-7b-hf"
     num_train_epochs = 10
-    warmup_ratio = 0.0
+    warmup_ratio = 0.05
     seed=0
     debug=False
-    model_name = f"neph_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}_epochs{num_train_epochs}_seed{seed}_{model_tag}"
+    if "llama" in load_model_name:
+        model_name = f"neph_llama2_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}_epochs{num_train_epochs}_wr{warmup_ratio}_seed{seed}_{tag}"
+    else:
+        model_name = f"neph_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}_epochs{num_train_epochs}_wr{warmup_ratio}_seed{seed}_{tag}"
     #model_name = f"neph_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}_epochs{num_train_epochs}_wr{warmup_ratio}_seed{seed}_{tag}"
     #model_name = "HuggingFaceH4/zephyr-7b-beta"
-    checkpoint = f"checkpoint-5000"
+    checkpoint = f"checkpoint-3000"
     decoding_strat = "greedy"
     used_lora = True
     tag = "_v5"
