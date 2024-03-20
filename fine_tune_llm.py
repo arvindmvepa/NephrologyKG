@@ -198,17 +198,22 @@ if __name__ == '__main__':
     model_name = r"/home/amvepa91/llama/llama-2-7b-hf"
     num_train_epochs = 10
     warmup_ratio = 0.05
+    use_quantization = False
+    target_modules = ["q_proj", "v_proj"]
+    target_modules_str = "_".join(target_modules)
+    r = 8
+    lora_alpha = 16
     seed=0
     debug=False
     if "llama" in model_name:
-        save_model_name = f"neph_llama2_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}_epochs{num_train_epochs}_wr{warmup_ratio}_seed{seed}_{tag}"
+        save_model_name = f"neph_llama2_blocksize{block_size}_optm{optimizer}_fp16{fp16}_q{use_quantization}_r{r}_a{lora_alpha}_tm{target_modules_str}_bs{per_device_train_batch_size}_epochs{num_train_epochs}_wr{warmup_ratio}_seed{seed}_{tag}"
     else:
-        save_model_name = f"neph_blocksize{block_size}_optm{optimizer}_fp16{fp16}_bs{per_device_train_batch_size}_epochs{num_train_epochs}_wr{warmup_ratio}_seed{seed}_{tag}"
+        save_model_name = f"neph_blocksize{block_size}_optm{optimizer}_fp16{fp16}_q{use_quantization}_r{r}_a{lora_alpha}_tm{target_modules_str}_bs{per_device_train_batch_size}_epochs{num_train_epochs}_wr{warmup_ratio}_seed{seed}_{tag}"
     output_dir = f"{save_model_name}_exp"
     data = load_dataset_from_file(data_path, seed=seed)
     tokenizer = load_tokenizer_from_huggingface(model_name)
     processed_data = process_dataset(data, tokenizer, block_size=block_size, debug=debug, old=old, debug_file=debug_file)
-    model = load_llm_from_huggingface(model_name, use_quantization=False)
+    model = load_llm_from_huggingface(model_name, use_quantization=use_quantization, target_modules=target_modules)
     train_model(model, tokenizer, processed_data, optimizer=optimizer, num_train_epochs=num_train_epochs,
                 warmup_ratio=warmup_ratio, per_device_train_batch_size=per_device_train_batch_size, fp16=fp16,
                 save_eval_steps=save_eval_steps, save_model_name=save_model_name, output_dir=output_dir)
