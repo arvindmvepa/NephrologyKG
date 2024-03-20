@@ -213,7 +213,7 @@ if __name__ == '__main__':
     data = load_dataset_from_file(data_path, seed=seed)
     tokenizer = load_tokenizer_from_huggingface(model_name)
     processed_data = process_dataset(data, tokenizer, block_size=block_size, debug=debug, old=old, debug_file=debug_file)
-    model = load_llm_from_huggingface(model_name, use_quantization=use_quantization, target_modules=target_modules)
+    model = load_llm_from_huggingface(model_name, use_quantization=use_quantization, target_modules=target_modules, r=r, lora_alpha=lora_alpha)
     train_model(model, tokenizer, processed_data, optimizer=optimizer, num_train_epochs=num_train_epochs,
                 warmup_ratio=warmup_ratio, per_device_train_batch_size=per_device_train_batch_size, fp16=fp16,
                 save_eval_steps=save_eval_steps, save_model_name=save_model_name, output_dir=output_dir)
